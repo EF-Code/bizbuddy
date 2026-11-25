@@ -1,0 +1,79 @@
+.twilio-workspace { display: grid; gap: 12px; }
+.twilio-loading, .twilio-overview, .twilio-panel, .twilio-account-card { border: 1px solid #e8e6f0; border-radius: 12px; background: #fff; box-shadow: 0 5px 16px rgba(39,35,78,.04); }
+.twilio-loading { padding: 28px; color: #77768a; font-size: 11px; }
+.twilio-demo-banner { padding: 10px 13px; border: 1px solid #ddd7ff; border-radius: 9px; background: #f5f2ff; color: #625c7b; font-size: 9px; line-height: 1.5; }
+.twilio-demo-banner span { margin-right: 7px; color: #5948d0; font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+.twilio-overview { min-height: 132px; padding: 19px 21px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(110deg,#fff 55%,#f2efff); }
+.twilio-connection-badge { display: inline-flex; align-items: center; gap: 7px; color: #7a798d; font-size: 9px; font-weight: 700; }
+.twilio-connection-badge i { width: 7px; height: 7px; border-radius: 50%; background: #a4a3b0; }
+.twilio-connection-badge.connected i { background: #36a879; box-shadow: 0 0 0 3px #e4f5eb; }
+.twilio-overview h2 { margin: 8px 0 5px; color: #26253b; font-size: 20px; }
+.twilio-overview p, .twilio-panel-copy, .twilio-setup-note { margin: 0; color: #77768a; font-size: 10px; line-height: 1.6; }
+.twilio-overview-actions { display: flex; gap: 7px; }
+.twilio-button { min-height: 34px; padding: 0 12px; border: 1px solid transparent; border-radius: 7px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.twilio-button:disabled { cursor: wait; opacity: .6; }
+.twilio-button.primary { background: #6951e8; color: #fff; }
+.twilio-button.secondary { border-color: #e4e2ed; background: #fff; color: #5b5970; }
+.twilio-button.danger { border-color: #f0dada; background: #fff; color: #a95050; }
+.twilio-account-card { padding: 14px 17px; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.twilio-account-card > div { min-width: 0; }
+.twilio-account-card span, .twilio-account-card strong { display: block; }
+.twilio-account-card span { margin-bottom: 6px; color: #8a899a; font-size: 7px; font-weight: 800; letter-spacing: .08em; }
+.twilio-account-card strong { overflow-wrap: anywhere; color: #39384e; font-size: 10px; }
+.twilio-demo-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.twilio-demo-metrics article { min-height: 72px; padding: 12px 14px; border: 1px solid #e8e6f0; border-radius: 10px; background: #fff; box-shadow: 0 5px 16px rgba(39,35,78,.04); }
+.twilio-demo-metrics span, .twilio-demo-metrics strong { display: block; }
+.twilio-demo-metrics span { color: #858497; font-size: 7px; font-weight: 800; letter-spacing: .07em; }
+.twilio-demo-metrics strong { margin-top: 7px; color: #29283f; font-size: 19px; }
+.twilio-content-grid { display: grid; grid-template-columns: minmax(240px,.72fr) minmax(0,1.8fr); align-items: start; gap: 11px; }
+.twilio-panel { min-width: 0; padding: 15px; }
+.twilio-panel-heading { min-height: 36px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.twilio-panel-heading span { color: #837ea1; font-size: 7px; font-weight: 800; letter-spacing: .09em; }
+.twilio-panel-heading h3 { margin: 4px 0 0; color: #29283f; font-size: 14px; }
+.twilio-form { display: grid; gap: 11px; }
+.twilio-form label, .twilio-filters label { display: grid; gap: 5px; color: #55546b; font-size: 9px; font-weight: 700; }
+.twilio-form label small { color: #858497; font-size: 8px; font-weight: 400; line-height: 1.4; }
+.twilio-form input, .twilio-form select, .twilio-form textarea, .twilio-filters input, .twilio-filters select { width: 100%; min-width: 0; min-height: 35px; padding: 8px 9px; border: 1px solid #e3e2ec; border-radius: 6px; outline: 0; background: #fff; color: #39384e; font: inherit; font-size: 9px; }
+.twilio-form textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+.twilio-form input:focus, .twilio-form select:focus, .twilio-form textarea:focus, .twilio-filters input:focus, .twilio-filters select:focus { border-color: #9281ee; box-shadow: 0 0 0 3px rgba(105,81,232,.09); }
+.twilio-form > button { justify-self: start; }
+.twilio-history-panel { padding-bottom: 8px; }
+.twilio-filters { display: grid; grid-template-columns: repeat(4,minmax(90px,1fr)); align-items: end; gap: 7px; margin-bottom: 9px; }
+.twilio-filters > input, .twilio-filters > select { min-height: 32px; }
+.twilio-filters label input { min-height: 32px; padding: 6px; }
+.twilio-filters button { min-height: 32px; }
+.twilio-message-list { max-height: 650px; overflow: auto; }
+.twilio-message-row { padding: 11px 2px; border-top: 1px solid #eeedf3; }
+.twilio-message-top { display: flex; align-items: center; gap: 7px; }
+.twilio-direction, .twilio-status, .twilio-channel { padding: 4px 7px; border-radius: 12px; background: #f0eff5; color: #69687c; font-size: 7px; font-weight: 700; text-transform: capitalize; }
+.twilio-direction.inbound { background: #e9f5ee; color: #438565; }
+.twilio-direction.outbound { background: #efedff; color: #6251cf; }
+.twilio-status.delivered, .twilio-status.received { background: #e9f5ee; color: #438565; }
+.twilio-status.failed, .twilio-status.undelivered, .twilio-status.canceled { background: #fff0ef; color: #a84c4a; }
+.twilio-status.queued, .twilio-status.sending, .twilio-status.sent, .twilio-status.accepted { background: #f4f0e2; color: #8c7442; }
+.twilio-channel { margin-left: auto; background: #f5f5f8; }
+.twilio-message-row > p { margin: 8px 0; color: #4a495d; font-size: 9px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.twilio-message-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; color: #858497; font-size: 7px; }
+.twilio-message-meta code { color: #9695a4; font-size: 7px; }
+.twilio-media { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.twilio-media span { padding: 4px 7px; border-radius: 5px; background: #f5f4fb; color: #69687c; font-size: 8px; }
+.twilio-error { display: block; margin-top: 6px; color: #a84c4a; font-size: 8px; }
+.twilio-empty { padding: 20px 10px; color: #858497; font-size: 9px; text-align: center; }
+.twilio-panel-copy { margin: -4px 0 15px; }
+
+@media (max-width: 760px) {
+  .twilio-content-grid { grid-template-columns: 1fr; }
+  .twilio-history-panel { order: 2; }
+  .twilio-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 520px) {
+  .twilio-overview { align-items: flex-start; flex-direction: column; padding: 15px; }
+  .twilio-overview-actions { width: 100%; }
+  .twilio-overview-actions button { flex: 1; }
+  .twilio-account-card { grid-template-columns: 1fr; gap: 12px; }
+  .twilio-panel { padding: 12px; }
+  .twilio-demo-metrics { gap: 6px; }
+  .twilio-demo-metrics article { padding: 10px; }
+  .twilio-panel-heading { align-items: flex-start; }
+  .twilio-filters { grid-template-columns: 1fr 1fr; }
+}
