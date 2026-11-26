@@ -20,6 +20,7 @@ import "./App.css";
 import "./Workspace.css";
 import "./Professional.css";
 import "./Brand.css";
+import "./Messages.css";
 
 const pages = [
   {
@@ -38,8 +39,8 @@ const pages = [
   },
   {
     slug: "demo",
-    label: "Messages demo",
-    code: "Messages demo",
+    label: "Messages",
+    code: "Messages",
     icon: "sparkle",
     group: "Workspace",
   },
@@ -256,7 +257,7 @@ export default function App() {
   useEffect(() => {
     document.title =
       pathname === "/demo"
-        ? "Interactive messages demo · BizBuddy"
+        ? "Messages · BizBuddy"
         : pathname === "/"
           ? "BizBuddy — Business, in better order"
           : `${!token ? (pathname === "/register" ? "Create account" : "Sign in") : page?.label || "Page not found"} · BizBuddy`;
@@ -412,6 +413,14 @@ export default function App() {
               </span>
             </div>
             <div className="bb-topbar-actions">
+              <button
+                className="bb-ai-shortcut"
+                onClick={() => navigatePage("assistant")}
+                aria-label="Open AI assistant"
+              >
+                <Icon name="sparkle" size={17} />
+                AI assistant
+              </button>
               <button
                 className="bb-search-trigger"
                 aria-label="Search workspace"

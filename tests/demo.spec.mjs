@@ -13,7 +13,7 @@ test("the original messaging demo is useful on a phone and never writes to a rea
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/signin");
   await page
-    .getByRole("link", { name: "Try the messages demo", exact: true })
+    .getByRole("link", { name: "Explore AI messages", exact: true })
     .click();
   await expect(page).toHaveURL(/\/demo$/);
   const log = page.getByRole("log", {
@@ -26,6 +26,9 @@ test("the original messaging demo is useful on a phone and never writes to a rea
     "Hi, is the blue ankara fabric still available?",
   );
   await expect(log).toContainText("₦8,000 per yard");
+  await expect(
+    log.getByText("BizBuddy AI · Example", { exact: true }).first(),
+  ).toBeVisible();
   await expect(
     page.getByText("Nothing is sent. All records are examples.", {
       exact: true,
@@ -54,6 +57,17 @@ test("the original messaging demo is useful on a phone and never writes to a rea
     .getByRole("button", { name: "Confirm example order", exact: true })
     .click();
   await expect(log).toContainText("Your example order is confirmed");
+  const roleColors = await page
+    .locator(".bb-demo-messages")
+    .evaluate((el) =>
+      ["customer", "assistant", "owner"].map(
+        (role) =>
+          getComputedStyle(el.querySelector(".bb-bubble-" + role))
+            .backgroundColor,
+      ),
+    );
+  expect(new Set(roleColors).size).toBe(3);
+
   await page
     .getByRole("button", { name: "Back to example conversations", exact: true })
     .click();

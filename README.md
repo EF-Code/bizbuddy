@@ -234,3 +234,9 @@ flows retain their existing structure. Shared brand roles live in `src/Brand.css
 active workspace styles reference those roles instead of separate navy/teal colors.
 The landing retains its signature image and composition, with clearer typography,
 consistent branding and a direct link to the messages demo.
+
+The menu entry is now **Messages**. Customer, assistant and owner messages have
+distinct colors and sender labels. The workspace highlights AI assistance and
+owner approval, with a live engine-status panel and an AI settings shortcut.
+Example conversations remain explicitly labeled; quota fallback is still shown
+honestly. Existing message URLs remain compatible.

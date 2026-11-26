@@ -44,13 +44,13 @@ export default function AuthPage({ mode, onNavigate, onAuthenticate }) {
             clearer day.
           </h2>
           <p>
-            Your conversations, orders and invoices.
+            AI-assisted conversations. Orders you control.
             <br />
             Together in one calm workspace.
           </p>
           <div className="bb-auth-features">
             {[
-              ["message", "Customer messages"],
+              ["sparkle", "AI-assisted messages"],
               ["box", "Order requests"],
               ["invoice", "Invoices & reminders"],
             ].map(([icon, label]) => (
@@ -222,7 +222,7 @@ export default function AuthPage({ mode, onNavigate, onAuthenticate }) {
                 onNavigate("/demo");
               }}
             >
-              Try the messages demo <Icon name="arrow" size={14} />
+              Explore AI messages <Icon name="arrow" size={14} />
             </a>
           </p>
         </section>

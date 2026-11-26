@@ -44,8 +44,8 @@ export default function LandingPage({ navigateAuth }) {
               <em>better business.</em>
             </h1>
             <p className="landing-description">
-              Keep orders moving, care for your customers, and let your AI
-              concierge take busywork off your hands.
+              Bring customer conversations, AI-assisted replies and order
+              requests into one workspace—with you in control.
             </p>
             <div className="landing-hero-actions">
               <button
@@ -62,7 +62,7 @@ export default function LandingPage({ navigateAuth }) {
                   navigateAuth("demo");
                 }}
               >
-                Try the messages demo <Icon name="arrow" size={16} />
+                Explore AI messages <Icon name="arrow" size={16} />
               </a>
             </div>
           </div>
