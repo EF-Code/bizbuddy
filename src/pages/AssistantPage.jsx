@@ -11,7 +11,8 @@ import {
 } from "../components/ui";
 
 export default function AssistantPage() {
-  const { bot, data, inbox, busy, error, action, onNavigate } = useBusiness();
+  const { bot, data, inbox, engine, busy, error, action, onNavigate } =
+    useBusiness();
   const [tab, setTab] = useState("Business knowledge"),
     [faq, setFaq] = useState(false),
     [test, setTest] = useState(""),
@@ -31,6 +32,40 @@ export default function AssistantPage() {
         title="Your business assistant"
         description="Helpful with the routine. Thoughtful about when to hand over."
       />
+      <section className="bb-engine-status" aria-label="Reply engine">
+        <span className="bb-engine-symbol">
+          <Icon name="sparkle" size={23} />
+        </span>
+        <div>
+          <h2>
+            {engine?.provider === "opencode"
+              ? "OpenCode AI"
+              : engine?.provider === "openai"
+                ? "AI replies"
+                : "Fact-based replies"}
+          </h2>
+          <p>
+            {engine?.provider === "opencode"
+              ? engine.state === "ready"
+                ? "Free AI replies are available. Responses use your saved business knowledge."
+                : engine.state === "limited"
+                  ? "OpenCode’s free usage limit has been reached. Your saved facts keep chat working; AI access is checked again automatically."
+                  : "The embedded AI engine is configured. Saved facts keep chat working while AI access is checked."
+              : "Your assistant answers from saved products, policies and FAQs."}
+          </p>
+        </div>
+        <Status
+          tone={
+            engine?.provider === "opencode" && engine.state !== "ready"
+              ? "warning"
+              : "success"
+          }
+        >
+          {engine?.provider === "opencode" && engine.state !== "ready"
+            ? "Fact-based fallback"
+            : "Available"}
+        </Status>
+      </section>
       <section className="bb-panel bb-assistant-status">
         <span className="bb-connection-icon">
           <Icon name="sparkle" size={24} />

@@ -144,6 +144,32 @@ test("professional workspace keeps the complete business workflow working", asyn
     chat = await context.newPage();
     chat.on("pageerror", (e) => errors.push(e.message));
     await chat.goto(chatUrl);
+    await chat.setViewportSize({ width: 390, height: 844 });
+    await expect(
+      chat.getByRole("button", {
+        name: "What are your opening hours?",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await chat
+      .getByRole("button", {
+        name: "What are your opening hours?",
+        exact: true,
+      })
+      .click();
+    await expect(chat.getByText(/owner will confirm that/)).toBeVisible();
+    const composer = await chat
+      .getByLabel("Your message", { exact: true })
+      .boundingBox();
+    expect(composer.y + composer.height).toBeLessThanOrEqual(844);
+    expect(
+      await chat.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBeTruthy();
+    await chat.screenshot({ path: "/tmp/bizbuddy-refined-chat-mobile.png" });
+    await chat.setViewportSize({ width: 1440, height: 1000 });
+
     await chat
       .getByLabel("Your message", { exact: true })
       .fill("What is the price of Blue ankara cotton?");
@@ -410,6 +436,40 @@ test("professional workspace keeps the complete business workflow working", asyn
       ),
     ).toBeTruthy();
     await shot("mobile-inventory");
+  });
+  await test.step("AI quota status stays honest and readable", async () => {
+    await page.route("**/api/assistant/engine", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          provider: "opencode",
+          model: "deepseek-v4.1-flash-free",
+          state: "limited",
+          fallback: true,
+          retry_after: 299,
+        }),
+      }),
+    );
+    await page.goto("/dashboard/assistant");
+    await expect(
+      page.getByRole("heading", { name: "OpenCode AI", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Fact-based fallback", { exact: true }),
+    ).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBeTruthy();
+    await shot("assistant-quota-mobile");
+    await page.unroute("**/api/assistant/engine");
+    await page.goto("/dashboard/inventory");
+    await expect(
+      page.getByText("Blue ankara cotton", { exact: true }),
+    ).toBeVisible();
   });
   await test.step("explicit loading failure and recovery", async () => {
     await page.setViewportSize({ width: 1440, height: 1000 });

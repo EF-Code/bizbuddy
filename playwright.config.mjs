@@ -36,6 +36,7 @@ export default defineConfig({
             DATABASE_URL: `sqlite:////tmp/bizbuddy-e2e-${process.pid}.db`,
             PUBLIC_API_URL: baseURL,
             OPENAI_API_KEY: "",
+            BIZBUDDY_AI_PROVIDER: "grounded",
           },
         },
         {

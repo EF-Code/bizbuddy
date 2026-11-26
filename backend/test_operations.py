@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import AsyncMock, patch
 from pathlib import Path
 
 # Run separately from the existing suite to isolate the database.
@@ -14,6 +15,8 @@ class OperationsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.original_engine = main.engine
+        cls.original_provider = os.environ.get('BIZBUDDY_AI_PROVIDER')
+        os.environ['BIZBUDDY_AI_PROVIDER'] = 'grounded'
         cls.original_key = os.environ.pop('OPENAI_API_KEY', None)
         main.engine = create_engine('sqlite:///' + str(Path(_tmp.name) / 'test.db'), connect_args={'check_same_thread': False})
         cls.client = TestClient(main.app)
@@ -26,6 +29,10 @@ class OperationsTests(unittest.TestCase):
         cls.client.__exit__(None, None, None)
         main.engine.dispose()
         main.engine = cls.original_engine
+        if cls.original_provider is None:
+            os.environ.pop('BIZBUDDY_AI_PROVIDER', None)
+        else:
+            os.environ['BIZBUDDY_AI_PROVIDER'] = cls.original_provider
         if cls.original_key:
             os.environ['OPENAI_API_KEY'] = cls.original_key
 
@@ -34,6 +41,29 @@ class OperationsTests(unittest.TestCase):
         result = cls.client.post('/api/auth/register', json={'name': 'Ada', 'email': email, 'password': 'test-password-123', 'business': 'Ada fabrics'})
         assert result.status_code == 201, result.text
         return {'Authorization': 'Bearer ' + result.json()['token']}
+
+    def test_engine_status_is_owner_only(self):
+        self.assertEqual(self.client.get('/api/assistant/engine').status_code, 401)
+        status = self.client.get('/api/assistant/engine', headers=self.owner)
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.json()['provider'], 'grounded')
+
+    def test_opencode_limit_keeps_public_chat_and_order_capture_working(self):
+        c, h = self.client, self.other
+        c.post('/api/operations/products', headers=h, json={'name': 'Gold sample', 'price': 120000, 'stock': 4, 'threshold': 1})
+        bot = c.post('/api/operations/website/setup', headers=h).json()
+        public = {'Origin': bot['website_domain']}
+        with patch.dict(os.environ, {'BIZBUDDY_AI_PROVIDER': 'opencode'}), patch('ai_provider.generate', AsyncMock(return_value=None)) as provider:
+            reply = c.post('/api/public/chat', headers=public, json={'public_id': bot['public_id'], 'message': 'What is the price of Gold sample?'})
+            self.assertEqual(reply.status_code, 200, reply.text)
+            self.assertIn('1,200', reply.json()['reply'])
+            self.assertFalse(reply.json()['needs_human'])
+            provider.assert_awaited_once()
+            order = c.post('/api/public/chat', headers=public, json={'public_id': bot['public_id'], 'conversation_id': reply.json()['external_conversation_id'], 'message': 'I want to order Gold sample'})
+            self.assertTrue(order.json()['order_request'])
+            self.assertTrue(order.json()['needs_human'])
+            # Orders stay local/deterministic even when AI is enabled.
+            self.assertEqual(provider.await_count, 1)
 
     def test_full_workflow(self):
         c, h = self.client, self.owner

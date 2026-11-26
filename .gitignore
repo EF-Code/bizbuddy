@@ -32,3 +32,5 @@ dist-ssr
 **/.venv/
 *.db-*
 backend/.encryption-key
+
+backend/.opencode-workspace/

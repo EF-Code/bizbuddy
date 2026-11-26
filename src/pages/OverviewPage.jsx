@@ -13,9 +13,38 @@ import {
 import { dateLabel, initials, money, timeLabel } from "../components/format";
 
 export default function OverviewPage() {
-  const { data, inbox, profile, busy, action, onNavigate } = useBusiness();
+  const { data, inbox, bot, profile, busy, action, onNavigate } = useBusiness();
   const [history, setHistory] = useState(false);
   const s = data.summary;
+  const setupSteps = [
+    {
+      title: "Add your catalogue",
+      detail: "Give customers accurate prices and stock information.",
+      done: data.products.length > 0,
+      page: "inventory",
+      icon: "box",
+    },
+    {
+      title: "Teach your assistant",
+      detail: "Save your opening hours, delivery policy and common answers.",
+      done: Boolean(bot.operating_hours && bot.delivery_policy),
+      page: "assistant",
+      icon: "sparkle",
+    },
+    {
+      title: "Open your customer chat",
+      detail: "Share a chat link. No external account is needed.",
+      done: inbox.channels.some(
+        (c) => c.channel === "website" && c.status === "connected",
+      ),
+      page: "connections",
+      icon: "message",
+    },
+  ];
+  const setupCount = setupSteps.filter((step) => step.done).length;
+  const recent = [...inbox.conversations]
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    .slice(0, 4);
   const channels = [
     ["website", "Website chat", "Your own customer chat page"],
     ["telegram", "Telegram", "Reply to your customers on Telegram"],
@@ -47,19 +76,58 @@ export default function OverviewPage() {
           Refresh briefing
         </Button>
       </PageHeader>
-      {!data.products.length && !inbox.conversations.length && (
-        <section className="bb-onboarding">
-          <Icon name="message" size={23} />
-          <div>
-            <h2>See your next conversation in action.</h2>
-            <p>
-              Explore example customer chats, replies and invoice reminders
-              before connecting your business.
-            </p>
+      {setupCount < setupSteps.length && (
+        <section className="bb-launchpad" aria-label="Workspace setup">
+          <div className="bb-launchpad-intro">
+            <span className="bb-launch-icon">
+              <Icon name="sparkle" size={28} />
+            </span>
+            <div>
+              <h2>Your business, ready for its next conversation.</h2>
+              <p>
+                Three small steps turn this workspace into your customer service
+                desk.
+              </p>
+            </div>
+            <span className="bb-setup-count">{setupCount} of 3 ready</span>
           </div>
-          <Button variant="secondary" onClick={() => onNavigate("demo")}>
-            Try the messages demo <Icon name="arrow" size={16} />
-          </Button>
+          <div
+            className="bb-setup-track"
+            role="progressbar"
+            aria-label="Workspace setup progress"
+            aria-valuemin={0}
+            aria-valuemax={3}
+            aria-valuenow={setupCount}
+          >
+            <span style={{ width: `${(setupCount / 3) * 100}%` }} />
+          </div>
+          <div className="bb-setup-steps">
+            {setupSteps.map((step) => (
+              <button
+                key={step.page}
+                onClick={() => onNavigate(step.page)}
+                className={step.done ? "is-done" : ""}
+              >
+                <span className="bb-setup-step-icon">
+                  <Icon name={step.done ? "check" : step.icon} size={22} />
+                </span>
+                <span>
+                  <strong>{step.title}</strong>
+                  <small>{step.detail}</small>
+                  <em>
+                    {step.done ? "Ready · Review" : "Get started"}
+                    <Icon name="arrow" size={15} />
+                  </em>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="bb-launchpad-footer">
+            <span>Want to explore before setting up?</span>
+            <Button variant="ghost" onClick={() => onNavigate("demo")}>
+              Try the messages demo <Icon name="arrow" size={16} />
+            </Button>
+          </div>
         </section>
       )}
       <div className="bb-stats">
@@ -258,6 +326,52 @@ export default function OverviewPage() {
             Past summaries
           </Button>
         </div>
+      </section>
+      <section className="bb-panel bb-recent-panel">
+        <div className="bb-panel-heading">
+          <div>
+            <h2>Recent conversations</h2>
+            <p>Pick up where your customers left off.</p>
+          </div>
+          <Button variant="ghost" onClick={() => onNavigate("inbox")}>
+            Open inbox <Icon name="arrow" size={16} />
+          </Button>
+        </div>
+        {recent.length ? (
+          <div className="bb-recent-list">
+            {recent.map((c) => (
+              <button key={c.id} onClick={() => onNavigate("inbox")}>
+                <span className="bb-avatar bb-avatar-soft">
+                  {initials(c.customer_name)}
+                </span>
+                <span>
+                  <strong>{c.customer_name || "Customer"}</strong>
+                  <small>
+                    {c.messages.at(-1)?.content || "New conversation"}
+                  </small>
+                </span>
+                <Channel name={c.channel} />
+                <Icon name="arrow" size={17} />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="bb-first-conversation">
+            <span className="bb-first-conversation-icon">
+              <Icon name="message" size={30} />
+            </span>
+            <div>
+              <h3>Your next customer conversation belongs here.</h3>
+              <p>
+                Try a complete example now, or connect your website chat to
+                start receiving real messages.
+              </p>
+            </div>
+            <Button variant="secondary" onClick={() => onNavigate("demo")}>
+              Explore example chats
+            </Button>
+          </div>
+        )}
       </section>
       {history && (
         <Modal

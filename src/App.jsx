@@ -18,6 +18,7 @@ import { initials } from "./components/format";
 import { request } from "./operationsApi";
 import "./App.css";
 import "./Workspace.css";
+import "./Professional.css";
 
 const pages = [
   {

@@ -184,3 +184,45 @@ Optional `BIZBUDDY_AXE_PATH=/absolute/path/to/axe.min.js` enables accessibility
 checks in the business workflow suite. Browser tests cover authentication,
 inventory, chat, order/stock updates, invoices, customer linking, settings,
 keyboard navigation and mobile layouts; the demo suite verifies zero API writes.
+
+The workspace also includes a setup checklist driven by actual catalogue,
+policy and channel settings, plus recent customer conversations. The customer
+chat offers suggested questions, a visible sending state, guarded message
+scrolling and a mobile composer that follows the visual viewport.
+
+### Embedded OpenCode AI
+
+The optional server-side bridge uses the official `@opencode/sdk` **2.4.2**,
+not the desktop application or CLI. Its dependencies are isolated under
+`ai/opencode/` and installed at `/var/lib/bizbuddy/opencode-2.4.2` on this VPS.
+Use `bash ops/install-opencode.sh` to install the pinned runtime on another setup
+with sufficient free disk space; ordinary website updates reuse it.
+
+Server-only `.env` settings:
+
+```dotenv
+BIZBUDDY_AI_PROVIDER=opencode
+OPENCODE_RUNTIME_DIR=/var/lib/bizbuddy/opencode-2.4.2
+OPENCODE_MODEL=deepseek-v4.1-flash-free
+OPENCODE_STATE_DIR=/home/vangaard/bizbuddy/backend/.opencode-workspace
+```
+
+The API launches a private stdio worker; no new public port or Caddy route is
+needed. Only SDK text generation is called, with tools denied, project
+configuration disabled and customer sessions removed after each generation.
+Credentials for other providers and the database are not passed to the worker.
+The configured model must appear in the SDK catalogue with zero prices; there
+is no automatic paid-model fallback. DeepSeek V4.1 Flash Free and Hy4 Flash Free
+are the supported model IDs, based on OpenCode's documented retention policies.
+
+Free models have provider quotas and can disappear. On this VPS the live
+SDK probe returned **Free usage limit reached**. This is an external availability
+limit, not working free access. BizBuddy automatically falls back to its existing
+fact-based replies on quota limits, invalid output, missing runtime or timeouts,
+with a five-minute cooldown. Order capture and sensitive payment checks remain
+deterministic. Assistant settings show the current provider/fallback state.
+The first request after a cooldown can take up to 25 seconds if the provider
+stalls. Requests arriving while the worker is occupied use fact-based replies.
+
+Sources: [OpenCode SDK](https://opencode.ai/docs/build/sdk/),
+[model access, pricing and privacy](https://opencode.ai/docs/console/models/).

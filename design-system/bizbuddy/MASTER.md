@@ -37,3 +37,13 @@ Both installed after a pre-install review. The UX database supplied verified
 accessible-authentication guidance. Its general design-system searches returned
 marketing-oriented patterns unsuitable for this dashboard; the visual concepts and
 these product-specific tokens take precedence over those generic recommendations.
+
+## Workspace refinement
+
+Keep the original public landing. Give the working application a distinct navy
+navigation rail, white work surfaces, teal actions and a quiet blue-grey canvas.
+Use the existing self-hosted typefaces, with readable body text and larger story
+headlines. Dashboard hierarchy: setup progress when needed, actual operating
+figures, owner actions and recent conversations. Do not fill empty accounts with
+fictional business records. Mobile remains a single focused conversation with a
+composer sized to the visual viewport. Motion explains sending and completion.

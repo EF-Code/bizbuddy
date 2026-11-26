@@ -23,16 +23,19 @@ export default function OperationsWorkspace({
     [inbox, setInbox] = useState(null),
     [bot, setBot] = useState(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [engine, setEngine] = useState(null);
   const mounted = useRef(true);
   const locked = useRef(false);
   const refresh = useCallback(async () => {
-    const [next, conversations, settings] = await Promise.all([
+    const [next, conversations, settings, provider] = await Promise.all([
       request("/operations"),
       request("/chatbot/dashboard"),
       request("/chatbot"),
+      request("/assistant/engine"),
     ]);
     if (mounted.current) {
+      setEngine(provider);
       setData(next);
       setInbox(conversations);
       setBot(settings);
@@ -111,6 +114,7 @@ export default function OperationsWorkspace({
     <BusinessContext.Provider
       value={{
         data,
+        engine,
         inbox,
         bot,
         profile,

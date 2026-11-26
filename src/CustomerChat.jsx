@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Brand, Button, Icon, Status } from "./components/ui";
 import { initials } from "./components/format";
+import { useViewportHeight } from "./components/useViewportHeight";
 import "./Workspace.css";
+import "./Professional.css";
 
 export default function CustomerChat() {
+  const viewportHeight = useViewportHeight();
+  const [following, setFollowing] = useState(true);
+  const [pending, setPending] = useState("");
   const publicId = window.location.pathname.split("/")[2];
   const storageKey = `bizbuddy-chat-${publicId}`;
   const [config, setConfig] = useState(null),
@@ -86,17 +91,20 @@ export default function CustomerChat() {
     } catch {
       /* Storage availability does not prevent a conversation. */
     }
-    list.current?.scrollTo({
-      top: list.current.scrollHeight,
-      behavior: "instant",
-    });
-  }, [messages, storageKey]);
-  async function send(event) {
-    event.preventDefault();
-    if (busy || !text.trim()) return;
+    if (following)
+      list.current?.scrollTo({
+        top: list.current.scrollHeight,
+        behavior: "instant",
+      });
+  }, [messages, storageKey, following, busy]);
+  async function send(event, suggestion) {
+    event?.preventDefault();
+    const content = (suggestion || text).trim();
+    if (busy || !content) return;
     setBusy(true);
     setError("");
-    const content = text.trim();
+    setPending(content);
+    setFollowing(true);
     try {
       const response = await fetch("/api/public/chat", {
         method: "POST",
@@ -116,7 +124,11 @@ export default function CustomerChat() {
         );
       conversation.current =
         result.external_conversation_id || conversation.current;
-      sessionStorage.setItem(storageKey, conversation.current);
+      try {
+        sessionStorage.setItem(storageKey, conversation.current);
+      } catch {
+        /* Chat still works without storage. */
+      }
       last.current = Math.max(last.current, result.message_id || 0);
       setMessages((current) => [
         ...current,
@@ -143,105 +155,209 @@ export default function CustomerChat() {
       );
     } finally {
       setBusy(false);
+      setPending("");
     }
   }
   return (
-    <main className="bb bb-public-chat">
+    <main
+      className="bb bb-public-chat bb-chat-experience"
+      style={{ "--bb-chat-vh": `${viewportHeight}px` }}
+    >
       <header className="bb-public-brand">
         <a href="/" aria-label="BizBuddy home">
           <Brand />
         </a>
         <span>Every chat. One inbox.</span>
       </header>
-      <section className="bb-chat-window">
-        <header>
-          <span className="bb-avatar">
+      <div className="bb-chat-layout">
+        <aside className="bb-chat-business">
+          <span className="bb-chat-business-mark">
             {initials(config?.name || "Business")}
           </span>
-          <div>
-            <h1>{config?.name || "Business chat"}</h1>
-            <span>Product questions, delivery and order requests.</span>
+          <h2>{config?.name || "Let’s talk business."}</h2>
+          <p>Good service starts with a conversation.</p>
+          <div className="bb-chat-capabilities">
+            {[
+              [
+                "box",
+                "Find your next favourite",
+                "Ask about products, prices and availability.",
+              ],
+              [
+                "message",
+                "A little help, right here",
+                "Get answers from this business’s saved information.",
+              ],
+              [
+                "shield",
+                "A person when it matters",
+                "The owner confirms orders, delivery and payments.",
+              ],
+            ].map(([icon, title, detail]) => (
+              <div key={icon}>
+                <Icon name={icon} size={22} />
+                <span>
+                  <strong>{title}</strong>
+                  <small>{detail}</small>
+                </span>
+              </div>
+            ))}
           </div>
-          <Status tone={config ? "success" : "neutral"}>
-            {config ? "Chat available" : "Connecting"}
-          </Status>
-        </header>
-        <div
-          className="bb-public-messages"
-          ref={list}
-          aria-live="polite"
-          aria-relevant="additions"
-        >
-          <div className="bb-chat-date">
-            Your conversation with {config?.name || "this business"}
+          <span className="bb-chat-business-footer">
+            <Icon name="shield" size={16} />
+            Your conversation goes to this business.
+          </span>
+        </aside>
+        <section className="bb-chat-window" aria-label="Business chat">
+          <header>
+            <span className="bb-avatar">
+              {initials(config?.name || "Business")}
+            </span>
+            <div>
+              <h1>{config?.name || "Business chat"}</h1>
+              <span>Product questions, delivery and order requests.</span>
+            </div>
+            <Status tone={config && !error ? "success" : "neutral"}>
+              {config ? "Chat available" : error ? "Unavailable" : "Connecting"}
+            </Status>
+          </header>
+          <div
+            className="bb-public-messages"
+            ref={list}
+            role="log"
+            tabIndex={0}
+            aria-label="Conversation messages"
+            onScroll={(e) =>
+              setFollowing(
+                e.currentTarget.scrollHeight -
+                  e.currentTarget.scrollTop -
+                  e.currentTarget.clientHeight <
+                  70,
+              )
+            }
+            aria-live="polite"
+            aria-relevant="additions"
+          >
+            <div className="bb-chat-date">
+              Your conversation with {config?.name || "this business"}
+            </div>
+            {config && (
+              <article className="bb-bubble">
+                <small>Business assistant</small>
+                <p>
+                  {config.welcome_message ||
+                    "Hello! How can we help you today?"}
+                </p>
+              </article>
+            )}
+            {messages.map((m) => (
+              <article
+                className={`bb-bubble ${m.sender === "customer" ? "bb-bubble-owner" : ""}`}
+                key={m.id}
+              >
+                <small>
+                  {m.sender === "customer" ? "You" : config?.name || "Business"}
+                </small>
+                <p>{m.content}</p>
+              </article>
+            ))}
+            {busy && (
+              <>
+                <article className="bb-bubble bb-bubble-owner bb-message-pending">
+                  <small>You · Sending</small>
+                  <p>{pending}</p>
+                </article>
+                <div className="bb-reply-progress" role="status">
+                  <span>
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  Preparing your reply…
+                </div>
+              </>
+            )}
+            {!messages.length && config && !busy && (
+              <div className="bb-chat-start">
+                <span>What can we help you with?</span>
+                <div>
+                  {(
+                    config.suggested_questions || [
+                      "What products do you sell?",
+                      "What are your opening hours?",
+                      "What is your delivery policy?",
+                    ]
+                  ).map((question) => (
+                    <button
+                      disabled={busy}
+                      key={question}
+                      onClick={() => send(null, question)}
+                    >
+                      {question}
+                      <Icon name="arrow" size={15} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {!config && !error && (
+              <p className="bb-form-help">Opening your conversation…</p>
+            )}
           </div>
-          {config && (
-            <article className="bb-bubble">
-              <small>Business assistant</small>
-              <p>
-                {config.welcome_message || "Hello! How can we help you today?"}
+          {!following && (
+            <button
+              className="bb-chat-latest"
+              onClick={() => setFollowing(true)}
+            >
+              Latest messages <Icon name="chevron" size={16} />
+            </button>
+          )}
+          <form className="bb-public-composer" onSubmit={send}>
+            {error && (
+              <p className="bb-alert bb-alert-error" role="alert">
+                <Icon name="warning" size={18} />
+                {error}
               </p>
-            </article>
-          )}
-          {messages.map((m) => (
-            <article
-              className={`bb-bubble ${m.sender === "customer" ? "bb-bubble-owner" : ""}`}
-              key={m.id}
-            >
-              <small>
-                {m.sender === "customer" ? "You" : config?.name || "Business"}
-              </small>
-              <p>{m.content}</p>
-            </article>
-          ))}
-          {!config && !error && (
-            <p className="bb-form-help">Opening your conversation…</p>
-          )}
-        </div>
-        <form className="bb-public-composer" onSubmit={send}>
-          {error && (
-            <p className="bb-alert bb-alert-error" role="alert">
-              <Icon name="warning" size={18} />
-              {error}
+            )}
+            <label htmlFor="customer-message" className="bb-sr-only">
+              Your message
+            </label>
+            <div>
+              <textarea
+                id="customer-message"
+                required
+                maxLength={2000}
+                disabled={!config || busy}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Write your message…"
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    !e.nativeEvent.isComposing
+                  ) {
+                    e.preventDefault();
+                    e.currentTarget.form.requestSubmit();
+                  }
+                }}
+              />
+              <Button
+                busy={busy}
+                icon="send"
+                disabled={!config || !text.trim()}
+                aria-label="Send message"
+              >
+                Send
+              </Button>
+            </div>
+            <p>
+              <Icon name="shield" size={13} />
+              Orders and payments are confirmed by the owner.
             </p>
-          )}
-          <label htmlFor="customer-message" className="bb-sr-only">
-            Your message
-          </label>
-          <div>
-            <textarea
-              id="customer-message"
-              required
-              maxLength={2000}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Write your message…"
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  !e.shiftKey &&
-                  !e.nativeEvent.isComposing
-                ) {
-                  e.preventDefault();
-                  e.currentTarget.form.requestSubmit();
-                }
-              }}
-            />
-            <Button
-              busy={busy}
-              icon="send"
-              disabled={!config || !text.trim()}
-              aria-label="Send message"
-            >
-              Send
-            </Button>
-          </div>
-          <p>
-            <Icon name="shield" size={13} />
-            Orders and payments are confirmed by the owner.
-          </p>
-        </form>
-      </section>
+          </form>
+        </section>
+      </div>
       <footer>
         Powered by <strong>BizBuddy</strong> · Keep this page open for replies.
       </footer>
