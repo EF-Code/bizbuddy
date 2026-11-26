@@ -151,8 +151,9 @@ Never commit the database, `.env`, credentials or private snapshots.
 
 ### Professional workspace and presentation demo
 
-The landing page retains its original markup and styles. Sign-in, registration,
-workspace navigation, inventory, orders, customers, invoices, connections,
+The landing page retains its signature imagery and composition, with the shared
+visual refinements described in DESIGN.md. Sign-in, registration, workspace
+navigation, inventory, orders, customers, invoices, connections,
 assistant settings and public customer chat use a responsive shared design system.
 Direct links under `/dashboard/` support browser history and refresh.
 
@@ -226,3 +227,10 @@ stalls. Requests arriving while the worker is occupied use fact-based replies.
 
 Sources: [OpenCode SDK](https://opencode.ai/docs/build/sdk/),
 [model access, pricing and privacy](https://opencode.ai/docs/console/models/).
+
+The landing page, sign-in and business workspace now share the violet, lavender
+and lime visual identity defined in [DESIGN.md](DESIGN.md). The menu and business
+flows retain their existing structure. Shared brand roles live in `src/Brand.css`;
+active workspace styles reference those roles instead of separate navy/teal colors.
+The landing retains its signature image and composition, with clearer typography,
+consistent branding and a direct link to the messages demo.

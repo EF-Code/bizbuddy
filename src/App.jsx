@@ -19,6 +19,7 @@ import { request } from "./operationsApi";
 import "./App.css";
 import "./Workspace.css";
 import "./Professional.css";
+import "./Brand.css";
 
 const pages = [
   {
@@ -265,7 +266,12 @@ export default function App() {
       <LandingPage
         navigateAuth={(value) =>
           navigate(
-            { landing: "/", signin: "/signin", register: "/register" }[value],
+            {
+              landing: "/",
+              signin: "/signin",
+              register: "/register",
+              demo: "/demo",
+            }[value],
           )
         }
       />

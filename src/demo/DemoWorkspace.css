@@ -1,6 +1,6 @@
 .bb-demo-public {
   min-height: 100dvh;
-  background: #f6f8fa;
+  background: var(--brand-canvas);
 }
 .bb-demo-site-header {
   height: 78px;
@@ -41,7 +41,7 @@
   flex-wrap: wrap;
 }
 .bb-demo-banner > span > span {
-  color: #536874;
+  color: var(--brand-muted);
 }
 .bb-demo-banner > button {
   border: 0;
@@ -88,7 +88,7 @@
 }
 .bb-demo-inbox .bb-inbox-controls > div > span {
   font-size: 11px;
-  color: #536874;
+  color: var(--brand-muted);
 }
 .bb-demo-inbox .bb-inbox-controls {
   gap: 16px;
@@ -113,8 +113,8 @@
   flex: none;
 }
 .bb-demo-thread-heading > .bb-avatar {
-  background: #d9eee6;
-  color: #0f7164;
+  background: var(--brand-soft);
+  color: var(--brand-link);
   height: 40px;
   width: 40px;
   font-size: 13px;
@@ -134,13 +134,13 @@
 .bb-demo-thread-heading > div > small {
   font-size: 10px;
   margin-left: 9px;
-  color: #536874;
+  color: var(--brand-muted);
 }
 .bb-demo-back {
   display: none;
   border: 0;
   background: transparent;
-  color: #496572;
+  color: var(--brand-muted);
   width: 36px;
   height: 36px;
   align-items: center;
@@ -158,10 +158,10 @@
   height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid #e3eaee;
+  border: 1px solid var(--brand-line);
   background: white;
   border-radius: 8px;
-  color: #76868e;
+  color: var(--brand-muted);
 }
 .bb-demo-options > summary::-webkit-details-marker {
   display: none;
@@ -188,16 +188,16 @@
   border: 0;
   border-radius: 6px;
   background: white;
-  color: #526a74;
+  color: var(--brand-muted);
   font-size: 12px;
   min-height: 42px;
 }
 .bb-demo-options button:hover {
-  background: #edf6f2;
+  background: var(--brand-soft);
 }
 .bb-demo-messages {
   padding: 20px 24px;
-  background: #f7fafb;
+  background: var(--brand-canvas);
   gap: 16px;
   min-height: 0;
   overscroll-behavior: contain;
@@ -205,7 +205,7 @@
 }
 .bb-demo-date {
   align-self: center;
-  color: #536874;
+  color: var(--brand-muted);
   font-size: 10px;
   margin: 0 0 6px;
   display: flex;
@@ -219,12 +219,12 @@
   content: "";
   height: 1px;
   width: 60px;
-  background: #dce5e9;
+  background: var(--brand-line);
 }
 .bb-demo-bubble {
   max-width: 84%;
   font-size: 14px;
-  border-color: #e8eef0;
+  border-color: var(--brand-line);
   box-shadow: 0 1px 2px #18343c03;
   padding: 13px 16px;
   animation: bb-message-in 0.18s ease-out both;
@@ -232,11 +232,11 @@
 .bb-demo-bubble p {
   font-size: 14px;
   line-height: 1.7;
-  color: #24414d;
+  color: var(--brand-ink);
 }
 .bb-demo-bubble small {
   font-size: 10px;
-  color: #6c8589;
+  color: var(--brand-muted);
   flex-wrap: wrap;
   gap: 4px 14px;
 }
@@ -244,8 +244,8 @@
   font-weight: 600;
 }
 .bb-demo-bubble.bb-bubble-assistant {
-  background: #e0f2eb;
-  border-color: #d4e9e0;
+  background: var(--brand-soft);
+  border-color: var(--brand-line);
 }
 .bb-demo-handoff {
   align-self: stretch;
@@ -253,9 +253,9 @@
   align-items: center;
   gap: 12px;
   padding: 13px 15px;
-  background: #eff7f3;
-  border: 1px solid #cae1d6;
-  color: #23695b;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-line);
+  color: var(--brand-link);
   border-radius: 8px;
   text-align: left;
   flex: none;
@@ -271,7 +271,7 @@
   display: block;
   font-size: 10px;
   margin-top: 2px;
-  color: #6d8c83;
+  color: var(--brand-muted);
 }
 .bb-demo-prompts {
   display: flex;
@@ -279,7 +279,7 @@
   overflow-x: auto;
   padding: 12px 18px;
   scrollbar-width: none;
-  border-top: 1px solid #e5edef;
+  border-top: 1px solid var(--brand-line);
   background: white;
   flex: none;
   overscroll-behavior-x: contain;
@@ -288,10 +288,10 @@
   display: none;
 }
 .bb-demo-prompts button {
-  border: 1px solid #bcd8cf;
+  border: 1px solid var(--brand-line);
   border-radius: 22px;
   background: white;
-  color: #326c5c;
+  color: var(--brand-link);
   padding: 8px 13px;
   font-size: 11px;
   min-height: 36px;
@@ -301,7 +301,7 @@
     transform 0.15s;
 }
 .bb-demo-prompts button:hover {
-  background: #e7f5ef;
+  background: var(--brand-soft);
   transform: translateY(-1px);
 }
 .bb-demo-composer {
@@ -322,7 +322,7 @@
   resize: vertical;
   font-size: 13px;
   background: #fbfcfc;
-  border-color: #cbdbe0;
+  border-color: var(--brand-line);
   padding: 11px 12px;
 }
 .bb-demo-composer .bb-btn {
@@ -333,7 +333,7 @@
 }
 .bb-demo-composer > p {
   font-size: 10px;
-  color: #536874;
+  color: var(--brand-muted);
   text-align: center;
   margin-top: 8px;
 }
@@ -341,7 +341,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  color: #688478;
+  color: var(--brand-muted);
   font-size: 10px;
   margin-bottom: 8px;
 }
@@ -349,7 +349,7 @@
   margin-left: auto;
   border: 0;
   background: none;
-  color: #0c7868;
+  color: var(--brand-link);
   text-decoration: underline;
   font-size: 10px;
   padding: 4px;
@@ -359,7 +359,7 @@
   align-items: center;
   gap: 8px;
   font-size: 10px;
-  color: #7c9294;
+  color: var(--brand-muted);
   padding: 5px 0;
   flex: none;
 }
@@ -390,10 +390,10 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid #b7d8ca;
+  border: 1px solid var(--brand-line);
   border-radius: 20px;
   background: white;
-  color: var(--bb-teal);
+  color: var(--bb-accent);
   font-size: 11px;
   padding: 8px 14px;
   box-shadow: 0 3px 15px #193a3015;
@@ -447,7 +447,7 @@
 }
 .bb-demo-summary-content > p {
   font-size: 15px;
-  color: #4e6c75;
+  color: var(--brand-muted);
   margin-bottom: 16px;
 }
 .bb-demo-summary-content ul {
@@ -463,12 +463,12 @@
   display: block;
   font-size: 16px;
   font-family: "BB Heading";
-  color: #294c56;
+  color: var(--brand-ink);
 }
 .bb-demo-summary-content li > span {
   display: block;
   font-size: 12px;
-  color: #7b8e94;
+  color: var(--brand-muted);
   margin-top: 5px;
 }
 .bb-page-enter {
@@ -486,8 +486,8 @@
   gap: 16px;
   padding: 20px 22px;
   margin-bottom: 24px;
-  background: #edf7f2;
-  border: 1px solid #d4e9de;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-line);
   border-radius: 10px;
 }
 .bb-onboarding > div {
@@ -500,21 +500,21 @@
 }
 .bb-onboarding p {
   font-size: 12px;
-  color: #6a847c;
+  color: var(--brand-muted);
 }
 .bb-onboarding > svg {
-  color: #2b8b73;
+  color: var(--brand-link);
 }
 .bb-auth-demo-link {
   display: flex;
   justify-content: center;
   gap: 6px;
   align-items: center;
-  border-top: 1px solid #e5ebef;
+  border-top: 1px solid var(--brand-line);
   margin-top: 22px;
   padding-top: 22px;
   font-size: 12px;
-  color: #6f828a;
+  color: var(--brand-muted);
 }
 .bb-auth-demo-link > a {
   font-weight: 600;
@@ -955,7 +955,7 @@
     gap: 10px;
     margin-bottom: 18px;
     font-size: 12px;
-    color: #6b7d85;
+    color: var(--brand-muted);
   }
   .bb-real-inbox-mode .bb-btn {
     font-size: 11px;
@@ -979,7 +979,7 @@
 }
 .bb .bb-demo-bubble small {
   font-size: 11px;
-  color: #496c64;
+  color: var(--brand-muted);
 }
 .bb .bb-demo-thread-heading h2 {
   font-size: 16px;

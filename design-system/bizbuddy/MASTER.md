@@ -47,3 +47,11 @@ headlines. Dashboard hierarchy: setup progress when needed, actual operating
 figures, owner actions and recent conversations. Do not fill empty accounts with
 fictional business records. Mobile remains a single focused conversation with a
 composer sized to the visual viewport. Motion explains sending and completion.
+
+## Current brand authority
+
+The user's latest brief explicitly authorizes refining the landing and login
+and bringing the workspace into the landing's violet/lavender/lime palette.
+`DESIGN.md` and `src/Brand.css` now supersede the earlier navy/teal and
+landing-preservation directions above. The current menu and basic UI structure
+remain the same.

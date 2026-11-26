@@ -18,6 +18,8 @@ test("professional workspace keeps the complete business workflow working", asyn
       .click();
   };
   const shot = async (name) => {
+    await expect(page.locator("h1").first()).toBeVisible();
+    await expect(page.locator(".bb-skeleton")).toHaveCount(0);
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({
