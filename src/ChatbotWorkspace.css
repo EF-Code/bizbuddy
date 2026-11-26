@@ -136,3 +136,32 @@
   .chatbot-section-heading { align-items: flex-start; }
   .chatbot-section-heading > .chatbot-secondary { font-size: 7px; padding-inline: 8px; }
 }
+
+.webchat-workspace { font-size: 13px; }
+.webchat-workspace .chatbot-summary p, .webchat-workspace .chatbot-status, .webchat-workspace .chatbot-muted { font-size: 12px; }
+.webchat-workspace .chatbot-primary, .webchat-workspace .chatbot-secondary { font-size: 12px; min-height: 38px; }
+.webchat-workspace .chatbot-metrics article span, .webchat-workspace .chatbot-metrics article small { font-size: 11px; }
+.webchat-workspace .chatbot-message p, .webchat-workspace .chatbot-conversation-heading strong { font-size: 13px; }
+.webchat-workspace .chatbot-message > span, .webchat-workspace .chatbot-conversation-heading span { font-size: 11px; }
+.webchat-workspace .chatbot-owner-reply input { font-size: 13px; }
+.webchat-workspace .chatbot-conversation-summary { font-size: 12px; }
+.webchat-workspace .chatbot-conversation-preview { font-size: 12px; }
+.webchat-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.webchat-settings label { display: grid; gap: 6px; color: #46455c; }
+.webchat-settings input, .webchat-settings textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #dcd9e9; border-radius: 7px; color: #29283f; background: white; font: inherit; }
+.webchat-settings textarea { min-height: 85px; resize: vertical; }
+.webchat-settings input:focus, .webchat-settings textarea:focus { outline: 2px solid #9281ee; outline-offset: 2px; }
+.webchat-wide { grid-column: 1 / -1; }
+.webchat-settings .webchat-checkbox { display: flex; align-items: center; }
+.webchat-checkbox input { width: 18px; height: 18px; }
+.webchat-settings small { color: #77768a; overflow-wrap: anywhere; }
+.webchat-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.webchat-snippet { padding: 16px; border-radius: 8px; background: #f5f3fc; white-space: pre-wrap; overflow-wrap: anywhere; }
+.webchat-error { padding: 14px; background: #fff0ef; color: #9a3434; border: 1px solid #efc6c3; border-radius: 8px; }
+.webchat-workspace button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 650px) { .webchat-settings { grid-template-columns: 1fr; } .webchat-workspace .chatbot-summary { align-items: flex-start; } .webchat-workspace .chatbot-metrics { grid-template-columns: 1fr 1fr; } }
+
+.webchat-products { border: 1px solid #dcd9e9; border-radius: 8px; min-width: 0; padding: 14px; }
+.webchat-products legend { padding: 0 6px; color: #46455c; }
+.webchat-product { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 14px; margin-bottom: 14px; }
+@media (max-width: 650px) { .webchat-product { grid-template-columns: 1fr; } }

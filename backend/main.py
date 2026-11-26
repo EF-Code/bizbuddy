@@ -11,6 +11,7 @@ from typing import Any, Literal, Optional
 from uuid import uuid4
 
 import httpx
+from ai_provider import ai_configured, opencode_reply
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet, InvalidToken
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -762,8 +763,8 @@ def question_requires_missing_details(message: str, knowledge: dict) -> bool:
 
 async def generate_chatbot_reply(chatbot: Chatbot, history: list[dict]) -> dict:
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=503, detail="AI is not configured. Add OPENAI_API_KEY to the backend .env file.")
+    if not ai_configured():
+        raise HTTPException(status_code=503, detail="AI is not configured. Configure OpenCode or an OpenAI-compatible provider in the backend environment.")
 
     knowledge = chatbot_knowledge(chatbot)
     system_prompt = (
@@ -781,22 +782,25 @@ async def generate_chatbot_reply(chatbot: Chatbot, history: list[dict]) -> dict:
         'keys: "reply" (string), "needs_human" (boolean), "order_request" (boolean). '
         f"Business knowledge: {json.dumps(knowledge, ensure_ascii=False)}"
     )
-    try:
-        async with AsyncOpenAI(api_key=api_key) as client:
-            completion = await client.chat.completions.create(
-                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-                messages=[{"role": "system", "content": system_prompt}, *history[-20:]],
-                response_format={"type": "json_object"},
-                max_completion_tokens=500,
-            )
-    except RateLimitError as error:
-        raise HTTPException(status_code=429, detail="AI usage limit reached. Try again shortly.") from error
-    except APIConnectionError as error:
-        raise HTTPException(status_code=502, detail="Could not connect to the AI provider.") from error
-    except APIStatusError as error:
-        raise HTTPException(status_code=502, detail="The AI provider could not complete the request.") from error
+    if os.getenv("AI_PROVIDER", "openai") == "opencode":
+        content = await opencode_reply(system_prompt, history)
+    else:
+        try:
+            async with AsyncOpenAI(api_key=api_key, timeout=30, max_retries=1) as client:
+                completion = await client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                    messages=[{"role": "system", "content": system_prompt}, *history[-20:]],
+                    response_format={"type": "json_object"},
+                    max_completion_tokens=500,
+                )
+        except RateLimitError as error:
+            raise HTTPException(status_code=429, detail="AI usage limit reached. Try again shortly.") from error
+        except APIConnectionError as error:
+            raise HTTPException(status_code=502, detail="Could not connect to the AI provider.") from error
+        except APIStatusError as error:
+            raise HTTPException(status_code=502, detail="The AI provider could not complete the request.") from error
 
-    content = completion.choices[0].message.content if completion.choices else None
+        content = completion.choices[0].message.content if completion.choices else None
     try:
         result = json.loads(content or "")
     except json.JSONDecodeError as error:
@@ -998,7 +1002,7 @@ async def process_customer_message(
         chatbot_enabled = chatbot.enabled
         auto_responses = chatbot.auto_responses
         history = [
-            {"role": "assistant" if item.sender == "assistant" else "user", "content": item.content}
+            {"role": "assistant" if item.sender in ("assistant", "owner") else "user", "content": item.content}
             for item in db.scalars(
                 select(ChatbotMessage)
                 .where(ChatbotMessage.conversation_id == conversation_id)
@@ -1642,10 +1646,10 @@ def update_chatbot(
 
 @app.post("/api/chatbot/activate")
 def activate_chatbot(user: User = Depends(get_current_user)):
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=503, detail="Add OPENAI_API_KEY before activating the chatbot.")
     with Session(engine) as db:
         chatbot = chatbot_for_owner(db, user)
+        if chatbot.auto_responses and not ai_configured():
+            raise HTTPException(status_code=503, detail="Configure the AI provider or turn off automatic AI replies to use owner-only chat.")
         channel_count = db.scalar(
             select(ChatbotChannel.id).where(
                 ChatbotChannel.owner_id == user.id,
@@ -1747,6 +1751,7 @@ def chatbot_dashboard(user: User = Depends(get_current_user)):
             )
         ) or 0
         return {
+            "ai_configured": ai_configured(),
             "enabled": chatbot.enabled if chatbot else False,
             "auto_responses": chatbot.auto_responses if chatbot else True,
             "channels": [channel_payload(channel) for channel in integrations],
@@ -2043,10 +2048,18 @@ def chatbot_widget_script():
   const messages = panel.querySelector('[aria-live]');
   const form = panel.querySelector('form');
   const input = form.querySelector('input');
-  let conversation = sessionStorage.getItem('bizbuddy-chat-' + bot) || crypto.randomUUID();
-  const lastMessageKey = 'bizbuddy-chat-last-' + bot;
-  let lastMessageId = Number(sessionStorage.getItem(lastMessageKey)) || 0;
-  sessionStorage.setItem('bizbuddy-chat-' + bot, conversation);
+  const storageKey = 'bizbuddy-chat-' + bot;
+  let conversation;
+  try { conversation = sessionStorage.getItem(storageKey); } catch { /* storage may be unavailable */ }
+  if (!conversation) conversation = crypto.randomUUID();
+  try { sessionStorage.setItem(storageKey, conversation); } catch { /* in-memory chat still works */ }
+  let busy = false;
+  let welcome = '';
+  let transcript = '';
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  Object.assign(status.style, {margin:'0',padding:'4px 12px',fontSize:'12px',color:'#666'});
+  panel.querySelector('header').appendChild(status);
   const add = (text, mine) => {
     const bubble = document.createElement('p');
     bubble.textContent = text;
@@ -2054,55 +2067,69 @@ def chatbot_widget_script():
     messages.appendChild(bubble);
     messages.scrollTop = messages.scrollHeight;
   };
-  button.onclick = () => { panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; };
-  fetch(api + '/api/public/chat/' + encodeURIComponent(bot)).then(response => response.ok ? response.json() : null).then(config => {
-    if (!config) return;
-    panel.querySelector('header').textContent = config.name || 'Business chat';
-    if (config.welcome_message) add(config.welcome_message, false);
-  }).catch(error => console.warn('BizBuddy chat welcome could not be loaded.', error));
   const poll = async () => {
-    if (panel.style.display !== 'block') return;
+    if (busy || panel.style.display !== 'block') return;
     try {
-      const response = await fetch(api + '/api/public/chat/' + encodeURIComponent(bot) + '/' + encodeURIComponent(conversation) + '?after=' + lastMessageId);
-      if (!response.ok) return;
+      const response = await fetch(api + '/api/public/chat/' + encodeURIComponent(bot) + '/' + encodeURIComponent(conversation));
+      if (busy) return;
+      if (response.status === 404) return;
+      if (!response.ok) throw new Error('Chat updates are unavailable.');
       const result = await response.json();
-      for (const message of result.messages || []) {
-        if (message.id > lastMessageId) {
-          lastMessageId = message.id;
-          sessionStorage.setItem(lastMessageKey, String(lastMessageId));
-          add(message.content, false);
-        }
+      if (busy) return;
+      const next = JSON.stringify(result.messages);
+      if (next !== transcript) {
+        transcript = next;
+        messages.replaceChildren();
+        if (welcome) add(welcome, false);
+        for (const message of result.messages || []) add(message.content, message.sender === 'customer');
       }
-    } catch (error) {
-      console.warn('BizBuddy chat could not check for new replies.', error);
-    }
+    } catch { status.textContent = 'Connection interrupted. Reconnecting…'; }
   };
+  button.onclick = () => {
+    const open = panel.style.display === 'none';
+    panel.style.display = open ? 'block' : 'none';
+    button.setAttribute('aria-expanded', String(open));
+    if (open) { input.focus(); poll(); }
+  };
+  fetch(api + '/api/public/chat/' + encodeURIComponent(bot)).then(async response => {
+    if (!response.ok) throw new Error('This business chat is currently unavailable.');
+    const config = await response.json();
+    panel.querySelector('header').firstChild.textContent = config.name || 'Business chat';
+    welcome = config.welcome_message || '';
+    if (!messages.children.length && welcome) add(welcome, false);
+  }).catch(error => { status.textContent = error.message; input.disabled = true; form.querySelector('button').disabled = true; });
   const pollTimer = setInterval(poll, 2500);
   window.addEventListener('beforeunload', () => clearInterval(pollTimer), {once:true});
   form.onsubmit = async event => {
     event.preventDefault();
     const text = input.value.trim();
-    if (!text) return;
-    input.value = '';
-    add(text, true);
+    if (!text || busy) return;
+    busy = true;
     const submit = form.querySelector('button');
     submit.disabled = true;
+    status.textContent = 'Sending…';
     try {
       const response = await fetch(api + '/api/public/chat', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({public_id:bot,conversation_id:conversation,message:text})});
       const result = await response.json();
-      if (!response.ok) throw new Error(result.detail || 'Message could not be sent.');
-      conversation = result.external_conversation_id || conversation;
-      lastMessageId = Math.max(lastMessageId, result.message_id || 0);
-      sessionStorage.setItem(lastMessageKey, String(lastMessageId));
-      add(result.reply || 'Your message has been received for the business owner to review.', false);
+      if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Message could not be sent.');
+      input.value = '';
+      status.textContent = result.needs_human ? 'Message received. The business owner will follow up.' : 'Message received.';
     } catch (error) {
-      add(error.message || 'Message could not be sent. Please try again later.', false);
-    } finally { submit.disabled = false; }
+      status.textContent = (error.message || 'Connection interrupted.') + ' Check the chat history before retrying.';
+    } finally { busy = false; submit.disabled = false; await poll(); }
   };
   document.body.append(button, panel);
 })();
 """
     return Response(content=script, media_type="application/javascript")
+
+
+def website_request_origin(request: Request) -> str:
+    origin = request.headers.get("origin")
+    if origin:
+        return origin
+    referer = urlsplit(request.headers.get("referer", ""))
+    return f"{referer.scheme}://{referer.netloc}" if referer.scheme in ("http", "https") and referer.netloc else ""
 
 
 @app.get("/api/public/chat/{public_id}")
@@ -2111,7 +2138,7 @@ def public_website_chat_config(public_id: str, http_request: Request):
         chatbot = db.scalar(select(Chatbot).where(Chatbot.public_id == public_id))
         if chatbot is None or not chatbot.enabled:
             raise HTTPException(status_code=404, detail="This business chat is not currently available.")
-        origin = http_request.headers.get("origin", "")
+        origin = website_request_origin(http_request)
         if not origin or not chatbot.website_domain or not hmac.compare_digest(origin, chatbot.website_domain):
             raise HTTPException(status_code=403, detail="This website is not allowed to use the chat widget.")
         return {
@@ -2137,15 +2164,13 @@ async def public_website_chat(request: WebsiteChatRequest, http_request: Request
         )
         if integration is None:
             raise HTTPException(status_code=404, detail="This business chat is not currently available.")
-        origin = http_request.headers.get("origin", "")
+        origin = website_request_origin(http_request)
         if not origin or not chatbot.website_domain or not hmac.compare_digest(origin, chatbot.website_domain):
             raise HTTPException(status_code=403, detail="This website is not allowed to use the chat widget.")
         owner_id = chatbot.owner_id
         external_id = request.conversation_id or str(uuid4())
 
     result = await process_customer_message(owner_id, "website", external_id, request.message)
-    if result.get("reply") is None:
-        raise HTTPException(status_code=503, detail="Your message is saved for the business owner to review.")
     return result
 
 
@@ -2160,9 +2185,9 @@ def poll_website_chat(
         raise HTTPException(status_code=422, detail="Invalid conversation identifier.")
     with Session(engine) as db:
         chatbot = db.scalar(select(Chatbot).where(Chatbot.public_id == public_id))
-        if chatbot is None or not chatbot.website_domain:
+        if chatbot is None or not chatbot.enabled or not chatbot.website_domain:
             raise HTTPException(status_code=404, detail="This business chat is not available.")
-        origin = http_request.headers.get("origin", "")
+        origin = website_request_origin(http_request)
         if not origin or not hmac.compare_digest(origin, chatbot.website_domain):
             raise HTTPException(status_code=403, detail="This website is not allowed to use the chat widget.")
         conversation = db.scalar(
@@ -2173,22 +2198,21 @@ def poll_website_chat(
             )
         )
         if conversation is None:
-            raise HTTPException(status_code=404, detail="Conversation not found.")
+            return {"messages": []}
         messages = db.scalars(
             select(ChatbotMessage)
             .where(
                 ChatbotMessage.conversation_id == conversation.id,
                 ChatbotMessage.id > after,
-                ChatbotMessage.sender.in_(("assistant", "owner")),
-                ChatbotMessage.delivery_status == "sent",
+                ChatbotMessage.delivery_status.in_(("received", "sent")),
             )
-            .order_by(ChatbotMessage.id)
-            .limit(50)
+            .order_by(ChatbotMessage.id.desc())
+            .limit(200)
         ).all()
         return {
             "messages": [
-                {"id": message.id, "content": message.content}
-                for message in messages
+                {"id": message.id, "content": message.content, "sender": message.sender}
+                for message in reversed(messages)
             ]
         }
 

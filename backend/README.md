@@ -60,14 +60,32 @@ Meta inbound messages require the app's webhook subscription to be configured
 in Meta for Developers; saving credentials alone does not subscribe a webhook.
 Disconnecting Telegram removes its registered webhook.
 
-## Dashboard pitch demos
+## Website chat and dashboard demos
 
-The dashboard’s **AI Chatbot Connection** page is a frontend-only business
-workspace demo. Its connected apps, customer conversations, AI replies,
-invoices, payments, and activity are sample data. Toggling connections,
-simulating messages, creating invoices, and marking invoices paid only updates
-the local demo state; it does not connect accounts, contact customers, create
-real invoices, or process payments.
+The dashboard’s **AI Chatbot Connection** page is a live website-chat workspace.
+Save the business name, assistant name, exact website origin, welcome message,
+and business knowledge. For owner-only messaging, uncheck **Automatic AI replies**
+and save. Click **Connect website**, then **Start website chat**, and embed the
+provided script on the allowed website. Local development proxies the widget
+script through Vite; an external site needs `PUBLIC_API_URL` pointing to the
+public HTTPS backend. Serve this script route as well as `/api` in production.
+
+Website messages and owner replies are persisted in the database. The inbox
+refreshes every 3 seconds; the widget checks for replies every 2.5 seconds and
+restores the latest 200 messages in its session after reload. Closing the browser
+session starts a new visitor identity. Anyone holding a visitor conversation ID
+can access that conversation from the allowed origin; treat IDs as private.
+AI failures leave messages in the inbox for owner follow-up. A saved message is
+acknowledged successfully, even when no automatic reply is available.
+
+For automatic AI replies, set `OPENAI_API_KEY`, `OPENAI_MODEL`, and, for an
+OpenAI-compatible provider, `OPENAI_BASE_URL` in the backend environment. These
+are backend-only settings. The model must support Chat Completions, JSON-object
+responses, and `max_completion_tokens`. A free model still needs its provider's
+API access and is subject to its availability and limits. No provider is
+contacted in the automated tests. WhatsApp, Telegram, and other adapters remain
+available in the backend for future work; the website workspace does not connect
+them.
 
 The **Overview → Twilio Messaging** page is also a frontend-only demo. It starts
 with a sample connected account and conversations; connecting, disconnecting,
@@ -114,3 +132,6 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 Run the React app in a second terminal from `my-app` with `npm run dev`. Vite
 proxies `/api` requests to `http://127.0.0.1:8000`. API documentation is
 available at `http://127.0.0.1:8000/docs`.
+
+For the keyless OpenCode/DeepSeek transport and the existing VPS/Caddy layout,
+see [website chat deployment](../docs/webchat-deployment.md).

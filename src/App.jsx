@@ -203,7 +203,7 @@ const sections = {
   "AI Chatbot Connection": {
     eyebrow: "AI CHATBOT",
     description:
-      "Explore a demo workspace with connected apps, customer chats, invoices, and payments.",
+      "Manage live website chat, business knowledge, and customer replies.",
     metrics: [],
     listTitle: "Customer conversations",
     rows: [],
