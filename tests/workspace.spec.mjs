@@ -501,6 +501,7 @@ test("professional workspace keeps the complete business workflow working", asyn
         "/dashboard/connections",
         "/dashboard/assistant",
         "/dashboard/settings",
+        `/chat/${publicId}`,
       ]) {
         await page.goto(route);
         await expect(page.locator("h1")).toBeVisible();

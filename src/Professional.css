@@ -315,6 +315,7 @@
   margin-bottom: 30px;
 }
 .bb-chat-business h2 {
+  color: #fff;
   font-size: clamp(24px, 2.7vw, 36px);
   line-height: 1.25;
   letter-spacing: -1.3px;
@@ -740,3 +741,4 @@
     margin-left: 61px;
   }
 }
+.bb-chat-experience > footer strong { color: #38575d; }
