@@ -111,6 +111,7 @@ def prepare(sha):
         run('npm', 'run', 'build', cwd=stage)
         run('node', '--check', stage / 'ops/gateway.mjs')
         run(sys.executable, stage / 'ops/test_gateway.py', cwd=stage)
+        run(sys.executable, stage / 'ops/test_update.py', cwd=stage)
         run(py_cache / 'bin/python', '-W', 'ignore', '-m', 'unittest', 'discover', '-s', 'backend', '-p', 'test_*.py', cwd=stage, env=isolated)
         with socket.socket() as listener:
             listener.bind(('127.0.0.1', 0))

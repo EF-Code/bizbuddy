@@ -71,6 +71,7 @@ class GatewayTests(unittest.TestCase):
             with self.assertRaises(urllib.error.HTTPError) as error:
                 urllib.request.urlopen(self.base + path)
             self.assertEqual(error.exception.code, 404)
+            error.exception.close()
         asset = urllib.request.urlopen(self.base + '/assets/old.js')
         self.assertIn('immutable', asset.headers['Cache-Control'])
 

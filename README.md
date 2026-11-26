@@ -84,6 +84,8 @@ files are excluded from git and denied by Vite's filesystem rules.
 ```sh
 npm run lint
 npm run build
+python3 ops/test_gateway.py
+python3 ops/test_update.py
 backend/.venv/bin/python -W ignore -m unittest discover -s backend -p 'test_*.py'
 ```
 
@@ -107,7 +109,7 @@ API to `127.0.0.1:8000`. Both services start automatically at boot.
 1. Exports the commit into an isolated release under `/var/lib/bizbuddy/releases`.
 2. Installs dependencies only when the lockfile/requirements change; insufficient
    disk space or failed installs leave the current site running.
-3. Runs lint, build, backend tests, gateway HTTP tests and an isolated API startup check.
+3. Runs lint, build, backend tests, gateway HTTP tests, rollback safety tests and an isolated API startup check.
 4. Takes a private SQLite snapshot, switches the active release atomically and
    restarts only BizBuddy's API. The static frontend remains available.
 5. Restores the previous code release if activation fails. Three recent releases
