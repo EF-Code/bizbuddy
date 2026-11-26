@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import AiPresence from "../components/AiPresence";
 import DemoWorkspace from "../demo/DemoWorkspace";
 import { useViewportHeight } from "../components/useViewportHeight";
 import { useBusiness } from "../businessContext";
@@ -108,8 +107,8 @@ function ConversationThread({ conversation, thread, requests }) {
               {m.sender === "customer"
                 ? conversation.customer_name || "Customer"
                 : m.sender === "owner"
-                  ? "You · Owner"
-                  : "BizBuddy assistant"}{" "}
+                  ? "You"
+                  : "Business assistant"}{" "}
               <span>
                 {timeLabel(m.created_at)}
                 {m.delivery_status === "draft" ? " · Draft" : ""}
@@ -225,7 +224,7 @@ function ConversationThread({ conversation, thread, requests }) {
 }
 
 export default function InboxPage() {
-  const { data, inbox, engine, onNavigate } = useBusiness();
+  const { data, inbox, onNavigate } = useBusiness();
   const [query, setQuery] = useState(""),
     [filter, setFilter] = useState("All conversations"),
     [channel, setChannel] = useState("all"),
@@ -289,11 +288,6 @@ export default function InboxPage() {
             : "Automatic replies paused"}
         </Status>
       </PageHeader>
-      <AiPresence
-        engine={engine}
-        compact
-        onManage={() => onNavigate("assistant")}
-      />
       {!inbox.conversations.length ? (
         <section className="bb-panel">
           <EmptyState

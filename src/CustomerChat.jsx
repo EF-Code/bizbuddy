@@ -5,7 +5,6 @@ import { useViewportHeight } from "./components/useViewportHeight";
 import "./Workspace.css";
 import "./Professional.css";
 import "./Brand.css";
-import "./Messages.css";
 
 export default function CustomerChat() {
   const viewportHeight = useViewportHeight();

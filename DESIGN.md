@@ -30,10 +30,3 @@ UI framework, animation dependency or external account is needed.
 Skill: pbakaus/impeccable, pinned 2fc5e1459efbbf06d92c7306517c286bf12490cf,
 reviewed before installation. Apply its polish, theming and craft guidance to the
 incumbent design. Optional hooks remain inactive.
-
-Messages use explicit sender roles: customer bubbles are white, assistant bubbles
-are lavender, and owner bubbles are deep violet with light text. Amber identifies
-requests requiring owner approval. AI capability and engine status are surfaced
-through `AiPresence`; simulated examples remain labeled and live free-provider
-limits remain visible. The navigation label is Messages; existing URLs remain
-compatible. No invented confidence scores, fake model activity or paid fallback.

@@ -67,16 +67,6 @@ test("professional workspace keeps the complete business workflow working", asyn
         exact: true,
       }),
     ).toBeVisible();
-    await expect(
-      page
-        .locator(".bb-sidebar")
-        .getByRole("link", { name: "Messages", exact: true }),
-    ).toBeVisible();
-    await expect(
-      page
-        .locator(".bb-sidebar")
-        .getByRole("link", { name: "Messages demo", exact: true }),
-    ).toHaveCount(0);
     await shot("overview-empty");
   });
   await test.step("inventory creation, editing, filtering, export and modal keyboard", async () => {
@@ -509,7 +499,6 @@ test("professional workspace keeps the complete business workflow working", asyn
       for (const route of [
         "/dashboard",
         "/dashboard/inventory",
-        "/dashboard/inbox",
         "/dashboard/invoices",
         "/dashboard/connections",
         "/dashboard/assistant",

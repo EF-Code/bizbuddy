@@ -1,5 +1,4 @@
 import { useState } from "react";
-import AiPresence from "../components/AiPresence";
 import { request } from "../operationsApi";
 import { useBusiness } from "../businessContext";
 import {
@@ -14,8 +13,7 @@ import {
 import { dateLabel, initials, money, timeLabel } from "../components/format";
 
 export default function OverviewPage() {
-  const { data, inbox, bot, engine, profile, busy, action, onNavigate } =
-    useBusiness();
+  const { data, inbox, bot, profile, busy, action, onNavigate } = useBusiness();
   const [history, setHistory] = useState(false);
   const s = data.summary;
   const setupSteps = [
@@ -78,7 +76,6 @@ export default function OverviewPage() {
           Refresh briefing
         </Button>
       </PageHeader>
-      <AiPresence engine={engine} onManage={() => onNavigate("assistant")} />
       {setupCount < setupSteps.length && (
         <section className="bb-launchpad" aria-label="Workspace setup">
           <div className="bb-launchpad-intro">
@@ -128,7 +125,7 @@ export default function OverviewPage() {
           <div className="bb-launchpad-footer">
             <span>Want to explore before setting up?</span>
             <Button variant="ghost" onClick={() => onNavigate("demo")}>
-              Explore AI messages <Icon name="arrow" size={16} />
+              Try the messages demo <Icon name="arrow" size={16} />
             </Button>
           </div>
         </section>

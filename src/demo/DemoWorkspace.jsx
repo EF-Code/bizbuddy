@@ -9,7 +9,6 @@ import {
   PageHeader,
   Status,
 } from "../components/ui";
-import AiPresence from "../components/AiPresence";
 import { money } from "../components/format";
 import { useViewportHeight } from "../components/useViewportHeight";
 import {
@@ -313,7 +312,7 @@ export default function DemoWorkspace({
       <div className="bb-demo-banner">
         <span>
           <Icon name="shield" size={16} />
-          <strong>Example conversations</strong>
+          <strong>Demo workspace</strong>
           <span>Nothing is sent. All records are examples.</span>
         </span>
         {embedded ? (
@@ -324,23 +323,20 @@ export default function DemoWorkspace({
             Your real inbox <Icon name="arrow" size={15} />
           </Button>
         ) : (
-          <button onClick={reset}>Reset examples</button>
+          <button onClick={reset}>Reset demo</button>
         )}
       </div>
       <div className="bb-demo-heading">
         <PageHeader
-          title="Messages"
-          description="Customer context, AI-assisted replies and owner approval. All in one conversation."
+          title="One inbox. Your whole business."
+          description="Explore the original BizBuddy conversations. Try a customer question and see what happens next."
         >
           <Button variant="secondary" icon="refresh" onClick={reset}>
             Reset example
           </Button>
         </PageHeader>
       </div>
-      {tab === "Messages" && <AiPresence example compact />}
-      <div
-        className={`bb-stats bb-demo-stats ${tab === "Messages" ? "bb-message-stats" : ""}`}
-      >
+      <div className="bb-stats bb-demo-stats">
         {[
           ["Sample conversations", demo.conversations.length, "message"],
           [
@@ -464,10 +460,7 @@ export default function DemoWorkspace({
               <div>
                 <h2>{selectedConversation.name}</h2>
                 <Channel name={selectedConversation.channel} />
-                <small className="bb-conversation-context">
-                  <Icon name="sparkle" size={12} />
-                  AI-assisted · Example conversation
-                </small>
+                <small>Sample conversation</small>
               </div>
               <details className="bb-demo-options" ref={options}>
                 <summary aria-label="Conversation options">
@@ -552,7 +545,6 @@ export default function DemoWorkspace({
               className="bb-thread-messages bb-demo-messages"
               ref={list}
               role="log"
-              tabIndex={0}
               aria-label="Sample customer and assistant messages"
               aria-live="polite"
               aria-relevant="additions"
@@ -567,18 +559,15 @@ export default function DemoWorkspace({
               {selectedConversation.messages.map((m) => (
                 <article
                   key={m.id}
-                  className={`bb-bubble bb-demo-bubble bb-bubble-${m.sender}`}
+                  className={`bb-bubble bb-demo-bubble ${m.sender === "customer" ? "" : "bb-bubble-assistant"}`}
                 >
                   <small>
                     <strong>
-                      {m.sender === "assistant" && (
-                        <Icon name="sparkle" size={13} />
-                      )}
                       {m.sender === "customer"
                         ? selectedConversation.name.split(" ")[0]
                         : m.sender === "owner"
-                          ? "You · Owner"
-                          : "BizBuddy AI · Example"}
+                          ? "You · Demo"
+                          : "BizBuddy assistant · Demo"}
                     </strong>
                     <span>{m.time}</span>
                   </small>
@@ -592,7 +581,7 @@ export default function DemoWorkspace({
                     <i />
                     <i />
                   </span>
-                  AI is drafting an example reply…
+                  Drafting a simulated reply…
                 </div>
               )}
               {currentRequest && (
