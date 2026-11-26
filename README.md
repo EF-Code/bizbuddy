@@ -148,3 +148,39 @@ Stop the update timer first when keeping a rollback active; otherwise the next
 check redeploys GitHub main. Database backups are **not** restored automatically,
 so an incompatible future schema migration needs a deliberate recovery plan.
 Never commit the database, `.env`, credentials or private snapshots.
+
+### Professional workspace and presentation demo
+
+The landing page retains its original markup and styles. Sign-in, registration,
+workspace navigation, inventory, orders, customers, invoices, connections,
+assistant settings and public customer chat use a responsive shared design system.
+Direct links under `/dashboard/` support browser history and refresh.
+
+Open `/demo` without an account to explore the original upstream example
+conversations, simulated replies, order confirmation, invoice reminders and daily
+summary. Demo actions stay in browser session storage: they send no messages and
+change no real business records. The inbox also offers these examples explicitly.
+Real messaging channels still require the provider credentials shown in Connections;
+website chat and the default rules assistant work without a paid AI API.
+
+Stack: React 19 (JavaScript/JSX), Vite 8, custom CSS, self-hosted DM Sans and Plus
+Jakarta Sans; FastAPI, Uvicorn, SQLAlchemy and SQLite (optional MySQL), bearer
+sessions and Fernet-protected credentials; Node HTTP gateway, Caddy, systemd and
+GitHub polling deployments. Integrations support Telegram, Gmail, Twilio and Meta;
+OpenAI is optional. No new paid service or account is needed for this redesign.
+
+Research, pinned upstream provenance and design decisions are recorded in
+[the research notes](design-system/bizbuddy/RESEARCH.md) and
+[the design system](design-system/bizbuddy/MASTER.md). Design references are saved
+alongside those documents. Actual screens preserve the references' typography,
+nav geometry, navy/teal palette, card hierarchy and mobile conversation layout;
+real data, explicit simulation labels and supported actions take precedence over
+illustrative values and controls in the references.
+
+Run `npm run test:e2e` for isolated browser regression tests. The configuration
+starts a separate API/database and Vite server; it rejects non-local test targets.
+Install Playwright Chromium first with `npx playwright install chromium --only-shell`.
+Optional `BIZBUDDY_AXE_PATH=/absolute/path/to/axe.min.js` enables accessibility
+checks in the business workflow suite. Browser tests cover authentication,
+inventory, chat, order/stock updates, invoices, customer linking, settings,
+keyboard navigation and mobile layouts; the demo suite verifies zero API writes.

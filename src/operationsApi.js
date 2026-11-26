@@ -8,11 +8,16 @@ export async function request(path, data, method = "POST") {
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok)
-    throw new Error(
+  if (!response.ok) {
+    const error = new Error(
       typeof body.detail === "string"
         ? body.detail
         : "Please check the form and try again.",
     );
+    error.status = response.status;
+    if (response.status === 401 && !path.startsWith("/auth/"))
+      window.dispatchEvent(new Event("bizbuddy-session-expired"));
+    throw error;
+  }
   return body;
 }

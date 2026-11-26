@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { request } from "./operationsApi";
 import "./OperationsWorkspace.css";
+import { PageHeader } from "./components/ui";
 
 export default function LiveTwilioWorkspace({ setNotice }) {
   const [account, setAccount] = useState(null);
@@ -46,16 +47,10 @@ export default function LiveTwilioWorkspace({ setNotice }) {
   }
   return (
     <section className="ops">
-      <header className="ops-heading">
-        <div>
-          <p>OPTIONAL PAID CHANNEL</p>
-          <h2>Twilio messaging</h2>
-          <span>Live provider connection · SMS and WhatsApp sandbox</span>
-        </div>
-      </header>
+      <PageHeader title="WhatsApp & SMS" description="Manage your verified Twilio connection and real message history." />
       <p>
         Twilio requires your own account and sender; usage may incur charges.
-        Free web chat and Telegram are available under AI Chatbot Connection.
+        Free web chat and Telegram are available on the Connections page.
         This page shows real Twilio message history.
       </p>
       {error && (

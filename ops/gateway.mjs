@@ -50,7 +50,7 @@ const server = http.createServer(async (req, res) => {
           try { body = await readFile(path.join(state, 'releases', old.name, 'dist', pathname.slice(1))); break; } catch { /* next retained release */ }
         }
         if (!body) { res.writeHead(404); res.end(); return; }
-      } else if (pathname === '/' || /^\/(signin|register|dashboard)\/?$/.test(pathname) || /^\/chat\/[^/]+\/?$/.test(pathname)) {
+      } else if (pathname === '/' || /^\/(signin|register|demo)\/?$/.test(pathname) || /^\/dashboard(?:\/[a-z-]+)?\/?$/.test(pathname) || /^\/chat\/[^/]+\/?$/.test(pathname)) {
         file = path.join(root, 'index.html'); body = await readFile(file);
       } else { res.writeHead(404); res.end(); return; }
     }
