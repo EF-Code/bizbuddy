@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import ChatbotWorkspace from "./ChatbotWorkspace.jsx";
-import TwilioWorkspace from "./TwilioWorkspace.jsx";
+import OperationsWorkspace from "./OperationsWorkspace.jsx";
+import LiveTwilioWorkspace from "./LiveTwilioWorkspace.jsx";
 import "./App.css";
 
 const api = async (path, options = {}) => {
@@ -291,7 +291,7 @@ const pricingPlans = [
 ];
 
 function App() {
-  const [active, setActive] = useState("Client Orders");
+  const [active, setActive] = useState("Atelier Dashboard");
   const [filter, setFilter] = useState("All Orders");
   const [orders, setOrders] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -370,7 +370,7 @@ function App() {
     return () => {
       activeEffect = false;
     };
-  }, [loggedIn]);
+  }, [loggedIn, active]);
 
   const navGroups = [
     {
@@ -1338,6 +1338,8 @@ function App() {
                 )}
               </div>
             </>
+          ) : ["Atelier Dashboard", "Unified Concierge", "AI Chatbot Connection", "Invoices & Reminders", "Fabrics & Stock", "Channels & Sync", "AI Atelier Tone", "Client Profiles"].includes(active) ? (
+            <OperationsWorkspace key={active} page={active} setNotice={setNotice} />
           ) : active === "Unified Concierge" ? (
             <section className="chat-page">
               <div className="chat-heading">
@@ -1390,9 +1392,9 @@ function App() {
               </form>
             </section>
           ) : active === "Twilio Messaging" ? (
-            <TwilioWorkspace setNotice={setNotice} />
+            <LiveTwilioWorkspace setNotice={setNotice} />
           ) : active === "AI Chatbot Connection" ? (
-            <ChatbotWorkspace setNotice={setNotice} />
+            <OperationsWorkspace key={active} page={active} setNotice={setNotice} />
           ) : active === "My Profile" ? (
             <section className="profile-page">
               <div className="profile-page-heading">

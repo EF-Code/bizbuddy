@@ -5,8 +5,14 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    allowedHosts: ['bizbuddy.naijatown.app'],
+    fs: { deny: ['**/.env', '**/.env.*', '**/*.{crt,pem}', '**/.git/**', '**/backend/**', '**/ops/**', '**/*.pdf'] },
     proxy: {
       '/api': 'http://127.0.0.1:8000',
-    },
-  },
+      '/chatbot-widget.js': 'http://127.0.0.1:8000',
+    }
+},
 })
