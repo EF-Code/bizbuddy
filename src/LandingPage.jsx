@@ -76,7 +76,7 @@ export default function LandingPage({ navigateAuth }) {
                 <span className="showcase-icon">
                   <Icon name="box" size={17} />
                 </span>
-                <span>Order flow</span>
+                <span>Order Flow</span>
               </div>
               <ol className="landing-order-timeline" aria-label="Order progress">
                 {[
@@ -99,7 +99,7 @@ export default function LandingPage({ navigateAuth }) {
                 <span className="showcase-icon sparkle">
                   <Icon name="sparkle" size={17} />
                 </span>
-                <span>AI assistant</span>
+                <span>AI Assistant</span>
               </div>
               <p>Thoughtful customer replies, right when you need them.</p>
               <span className="showcase-link">
@@ -110,7 +110,7 @@ export default function LandingPage({ navigateAuth }) {
               </span>
             </article>
             <article className="showcase-card showcase-workspace">
-              <span className="workspace-label">Your workspace</span>
+              <span className="workspace-label">Your Workspace</span>
               <strong>
                 Everything in
                 <br />
