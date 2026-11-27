@@ -90,6 +90,17 @@ class MerchantAITests(unittest.TestCase):
             self.assertNotIn(SECRET, response.text)
         self.assertEqual(self.connect(consent=False).status_code, 422)
 
+    def test_public_plan_catalogue_has_four_tiers_and_clear_annual_totals(self):
+        response = self.client.get('/api/plans')
+        self.assertEqual(response.status_code, 200)
+        plans = response.json()
+        self.assertFalse(plans['checkout_enabled'])
+        self.assertEqual(plans['currency'], 'NGN')
+        self.assertEqual([p['id'] for p in plans['tiers']], ['free', 'starter', 'growth', 'business'])
+        self.assertEqual([p['monthly_price'] for p in plans['tiers']], [0, 5000, 15000, 35000])
+        for tier in plans['tiers']:
+            self.assertEqual(tier['annual_price'], tier['monthly_price'] * 10)
+
     def test_chatgpt_entitlement_is_not_granted_to_new_merchants(self):
         with patch.dict(os.environ, {'BIZBUDDY_AI_PROVIDER': 'chatgpt', 'BIZBUDDY_CHATGPT_OWNER_IDS': str(self.owner)}):
             self.assertTrue(main.merchant_ai_status(self.owner)['managed_available'])

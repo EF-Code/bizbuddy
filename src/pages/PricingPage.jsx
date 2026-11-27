@@ -11,101 +11,60 @@ import {
 } from "../components/ui";
 import AIConnectionPanel from "../components/AIConnectionPanel";
 
+const money = (amount) =>
+  new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(amount);
+
 export function PlanOptions({ onStart }) {
-  const [plans, setPlans] = useState(null),
-    [error, setError] = useState("");
+  const [plans, setPlans] = useState(null);
+  const [error, setError] = useState("");
+  const [annual, setAnnual] = useState(false);
   useEffect(() => {
     let active = true;
     request("/plans")
-      .then((p) => {
-        if (active) setPlans(p);
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    return () => {
-      active = false;
-    };
+      .then((p) => { if (active) setPlans(p); })
+      .catch((e) => { if (active) setError(e.message); });
+    return () => { active = false; };
   }, []);
-  if (!plans)
-    return error ? <InlineError>{error}</InlineError> : <LoadingPage />;
+  if (!plans) return error ? <InlineError>{error}</InlineError> : <LoadingPage />;
   return (
-    <div className="bb-pricing-grid">
-      <section className="bb-panel bb-price-option">
-        <Status tone="success">Available now</Status>
-        <h2>Business workspace</h2>
-        <p className="bb-price-amount">
-          ₦0<span>/ month during early access</span>
-        </p>
-        <p>
-          Start managing customers and automate replies with your own model
-          connection.
-        </p>
-        <ul>
-          {[
-            "Private business workspace and unified inbox",
-            "Website chat, customer profiles and order capture",
-            "Invoice follow-ups and daily summaries",
-            "Connect OpenAI, Groq or Google Gemini",
-            "Set a monthly AI request cap",
-            "Saved-fact replies and human handoffs",
-          ].map((item) => (
-            <li key={item}>
-              <Icon name="check" size={18} />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <Button onClick={onStart}>
-          Set up my assistant <Icon name="arrow" size={16} />
-        </Button>
-        <small>
-          AI provider usage is billed by your chosen provider. Provider free
-          tiers and limits may apply.
-        </small>
-      </section>
-      <section className="bb-panel bb-price-option bb-price-managed">
-        <Status tone={plans.managed_available ? "success" : "neutral"}>
-          {plans.managed_available ? "Available" : "Coming soon"}
-        </Status>
-        <h2>BizBuddy managed AI</h2>
-        <p className="bb-price-amount">
-          {plans.managed_available ? "Included" : "Pricing at launch"}
-          <span>
-            {plans.managed_available
-              ? "during early access"
-              : "No charges or checkout yet"}
-          </span>
-        </p>
-        <p>
-          Model access managed by BizBuddy, with clear usage limits and no API
-          key setup for your team.
-        </p>
-        <ul>
-          {[
-            `Model: ${plans.managed_model === "gpt-6-luna" ? "GPT-6-Luna" : plans.managed_model}`,
-            `${plans.managed_limit} monthly AI requests when access is enabled`,
-            "Business-specific knowledge and reply tone",
-            "Usage monitoring and human handoffs",
-          ].map((item) => (
-            <li key={item}>
-              <Icon name="check" size={18} />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <Button variant="secondary" onClick={onStart}>
-          {plans.managed_available
-            ? "Choose managed AI"
-            : "View AI access options"}
-        </Button>
-        <small>
-          {plans.managed_available
-            ? "Availability and provider limits apply."
-            : "Managed AI is not open to new workspaces yet. You can connect your own model today."}
-        </small>
-      </section>
-    </div>
+    <>
+      <div className="bb-pricing-controls">
+        <div className="bb-billing-toggle" role="group" aria-label="Billing period">
+          <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>Monthly</button>
+          <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual <span>2 months free</span></button>
+        </div>
+        <p>All prices in NGN. Annual plans save you two months.</p>
+      </div>
+      <p className="bb-pricing-launch" role="note">
+        Free is available now. Paid tiers are launch pricing; checkout is not open yet.
+        Planned managed AI allowances activate only when paid subscriptions launch.
+      </p>
+      <div className="bb-pricing-grid" aria-live="polite" aria-atomic="true">
+        {plans.tiers.map((plan) => {
+          const free = plan.id === "free";
+          return (
+            <section key={plan.id} className={`bb-panel bb-price-option${plan.id === "growth" ? " bb-price-managed" : ""}`} aria-label={`${plan.name} plan`}>
+              <div className="bb-price-heading">
+                <h2>{plan.name}</h2>
+                <Status tone={free ? "success" : "neutral"}>{free ? "Available now" : "At launch"}</Status>
+              </div>
+              <p className="bb-price-audience">{plan.audience}</p>
+              <p>{plan.description}</p>
+              <p className="bb-price-amount">
+                {money(annual ? plan.annual_price : plan.monthly_price)}
+                <span>{free ? "Free forever · no card needed" : annual ? "per year · billed annually" : "per month · billed monthly"}</span>
+              </p>
+              <p className="bb-price-saving">{free ? "Start with your own model or saved facts." : annual ? `Save ${money(plan.monthly_price * 12 - plan.annual_price)} each year.` : `${money(plan.annual_price)} per year with annual billing.`}</p>
+              <ul>{plan.features.map((item) => <li key={item}><Icon name="check" size={18} />{item}</li>)}</ul>
+              <Button variant={plan.id === "growth" || free ? "primary" : "secondary"} onClick={onStart}>
+                {free ? "Start with Free" : "Start free before launch"}<Icon name="arrow" size={16} />
+              </Button>
+              <small>{free ? "No subscription required. AI provider charges may apply." : "No charge today. Starting free does not activate a paid subscription."}</small>
+            </section>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -113,8 +72,8 @@ export default function PricingPage({ onNavigate, publicPage = false }) {
   const content = (
     <>
       <PageHeader
-        title="AI replies. Clear costs."
-        description="Start with a free business workspace. Choose who provides your AI."
+        title="A plan for every stage of your business."
+        description="Start free. Choose monthly or annual billing when you’re ready to grow."
       />
       <PlanOptions
         onStart={() =>
@@ -132,13 +91,12 @@ export default function PricingPage({ onNavigate, publicPage = false }) {
         <dl>
           <div>
             <dt>BizBuddy workspace</dt>
-            <dd>Free during early access. No card needed.</dd>
+            <dd>Free costs ₦0. Starter, Growth and Business offer monthly or annual launch pricing. Paid checkout is not yet available.</dd>
           </div>
           <div>
-            <dt>Your model API key</dt>
+            <dt>AI access and allowances</dt>
             <dd>
-              Usage goes to your provider account. Your monthly request cap
-              limits requests, not the provider’s currency charges.
+              Managed AI is currently limited to enabled workspaces and their existing request caps. Paid-tier allowances are planned for launch. With your own API key, usage is billed separately by your provider; a request cap is not a currency spending limit.
             </dd>
           </div>
           <div>

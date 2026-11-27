@@ -339,9 +339,13 @@ approval; alternatively provision API-backed managed access with
 automatically. `BIZBUDDY_MANAGED_AI_LIMIT` defaults to 100 requests per month.
 Managed-access requests are saved per tenant without sending external messages.
 
-`/pricing` and the workspace plan show free early access, separate provider costs,
-and actual managed-AI availability. Checkout and subscription charges remain
-disabled. Research and scope: `docs/product-gap-review.md`.
+`/pricing` and the workspace plan share the `/api/plans` catalogue: Free, Starter
+(NGN 5,000/month), Growth (NGN 15,000/month), and Business (NGN 35,000/month).
+Annual pricing charges ten monthly payments upfront; the period switch shows
+the full yearly charge and savings. Paid prices and larger managed-AI allowances
+are launch previews. Checkout and subscription charges remain disabled; starting
+free does not grant paid entitlements or change existing managed-AI request caps.
+Provider costs are separate. Research and scope: `docs/product-gap-review.md`.
 
 ### Order and inventory consistency
 

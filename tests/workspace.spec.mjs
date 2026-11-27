@@ -407,7 +407,7 @@ test("professional workspace keeps the complete business workflow working", asyn
     await shot("settings");
     await nav("Workspace plan");
     await expect(
-      page.getByRole("heading", { name: "Business workspace", exact: true }),
+      page.getByRole("heading", { name: "Free", exact: true }),
     ).toBeVisible();
     await shot("plan");
     await nav("WhatsApp & SMS");
