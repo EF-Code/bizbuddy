@@ -133,7 +133,7 @@ export default function AIConnectionPanel({
               />
               <p>
                 Assistant test replies count toward this cap. Failed requests
-                are released. Provider token charges can vary.
+                are released. Your allowance resets on the first of each month (UTC).
               </p>
             </div>
           )}
@@ -147,7 +147,7 @@ export default function AIConnectionPanel({
               <h3>BizBuddy managed AI</h3>
               <p>
                 {engine.managed_available
-                  ? `${engine.managed_model} is available for this workspace. No model key needed.`
+                  ? `${engine.managed_model} is available for this workspace. Free plan: ${engine.managed_limit} managed AI requests per month. No model key needed.`
                   : "Let BizBuddy handle model access. Managed AI for new businesses is coming soon."}
               </p>
               {engine.managed_available ? (

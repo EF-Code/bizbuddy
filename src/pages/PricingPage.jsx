@@ -36,7 +36,7 @@ export function PlanOptions({ onStart }) {
         <p>All prices in NGN. Annual plans save you two months.</p>
       </div>
       <p className="bb-pricing-launch" role="note">
-        Free is available now. Paid tiers are launch pricing; checkout is not open yet.
+        {plans.prototype_mode ? "Free includes 100 managed AI replies per account each month. No API key needed." : "Free is available now."} Paid tiers are launch pricing; checkout is not open yet.
         Planned managed AI allowances activate only when paid subscriptions launch.
       </p>
       <div className="bb-pricing-grid" aria-live="polite" aria-atomic="true">
@@ -54,7 +54,7 @@ export function PlanOptions({ onStart }) {
                 {money(annual ? plan.annual_price : plan.monthly_price)}
                 <span>{free ? "Free forever · no card needed" : annual ? "per year · billed annually" : "per month · billed monthly"}</span>
               </p>
-              <p className="bb-price-saving">{free ? "Start with your own model or saved facts." : annual ? `Save ${money(plan.monthly_price * 12 - plan.annual_price)} each year.` : `${money(plan.annual_price)} per year with annual billing.`}</p>
+              <p className="bb-price-saving">{free ? plans.prototype_mode ? "100 managed AI replies each month." : "Start with your own model or saved facts." : annual ? `Save ${money(plan.monthly_price * 12 - plan.annual_price)} each year.` : `${money(plan.annual_price)} per year with annual billing.`}</p>
               <ul>{plan.features.map((item) => <li key={item}><Icon name="check" size={18} />{item}</li>)}</ul>
               <Button variant={plan.id === "growth" || free ? "primary" : "secondary"} onClick={onStart}>
                 {free ? "Start with Free" : "Start free before launch"}<Icon name="arrow" size={16} />
@@ -96,7 +96,7 @@ export default function PricingPage({ onNavigate, publicPage = false }) {
           <div>
             <dt>AI access and allowances</dt>
             <dd>
-              Managed AI is currently limited to enabled workspaces and their existing request caps. Paid-tier allowances are planned for launch. With your own API key, usage is billed separately by your provider; a request cap is not a currency spending limit.
+              The prototype Free plan includes 100 managed AI requests per account each calendar month, including assistant tests. Failed requests do not consume the allowance. Paid-tier allowances are planned for launch. With your own API key, usage is billed separately by your provider; a request cap is not a currency spending limit.
             </dd>
           </div>
           <div>

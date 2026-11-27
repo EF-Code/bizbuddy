@@ -14,9 +14,10 @@ Users are merchants, often operating on phones and with little API experience.
 Use the incumbent violet/lime/lavender identity, menu and landing artwork. Avoid
 blocking ordinary workspace access; unfinished setup is resumable.
 
-AI access can be an explicitly enabled managed connection or an encrypted
-merchant-owned OpenAI, Groq or Gemini key. A self-hosted ChatGPT authorization is
-not automatically a pooled SaaS entitlement. Platform pricing is free early
+This installation is a prototype with owner-created test accounts. Managed AI
+is available by default to every current and new account on the Free plan, capped
+at 100 requests per account per UTC calendar month. Merchant-owned encrypted
+OpenAI, Groq or Gemini connections remain optional. Platform pricing is free early
 access unless the owner approves paid prices. Provider charges remain separate;
 no subscription checkout is enabled without a payment provider.
 
