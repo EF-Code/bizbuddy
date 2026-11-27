@@ -142,9 +142,17 @@ def install_routes(app, core):
     def session():
         return Session(core['engine'])
 
+    def prototype_mode():
+        return os.getenv('BIZBUDDY_PROTOTYPE_MODE', 'false').lower() == 'true'
+
+    def managed_limit():
+        return 100 if prototype_mode() else int(os.getenv('BIZBUDDY_MANAGED_AI_LIMIT', '100'))
+
     def managed_allowed(owner=None):
         import ai_provider
         kind = os.getenv('BIZBUDDY_AI_PROVIDER', '').lower()
+        if prototype_mode():
+            return ai_provider.configured() or bool(os.getenv('OPENAI_API_KEY'))
         if kind == 'opencode':
             return ai_provider.configured()
         if kind == 'chatgpt':
@@ -160,6 +168,23 @@ def install_routes(app, core):
             db.add(row)
             db.flush()
         return row
+
+    def enable_prototype_managed_ai():
+        """Explicit rollout for existing test accounts; never erase keys or usage."""
+        if not prototype_mode() or not managed_allowed():
+            raise RuntimeError('Configure managed AI and enable prototype mode first.')
+        changed = 0
+        with gate, session() as db:
+            for owner in db.scalars(select(core['User'].id)):
+                row = settings(db, owner)
+                if row.source != 'managed':
+                    row.source, row.test_passed = 'managed', False
+                    row.revision += 1
+                    changed += 1
+            db.commit()
+        return {'updated_existing_settings': changed, 'monthly_limit': managed_limit()}
+
+    core['enable_prototype_managed_ai'] = enable_prototype_managed_ai
 
     def knowledge_fingerprint(bot):
         return hashlib.sha256(json.dumps(core['chatbot_knowledge'](bot), sort_keys=True).encode()).hexdigest()
@@ -178,7 +203,7 @@ def install_routes(app, core):
             source = row.source if row else 'managed' if managed_allowed(owner) else 'grounded'
             if source == 'managed':
                 result = ai_provider.status() if managed_allowed(owner) else {'provider': 'managed', 'state': 'not_available', 'fallback': True}
-                limit = int(os.getenv('BIZBUDDY_MANAGED_AI_LIMIT', '100'))
+                limit = managed_limit()
             elif source == 'byok' and row and row.encrypted_credentials:
                 result = {'provider': row.provider, 'model': row.model, 'state': row.state, 'fallback': row.state != 'ready'}
                 limit = row.monthly_limit
@@ -188,7 +213,8 @@ def install_routes(app, core):
             used = count_usage(db, owner, source)
             if source != 'grounded' and used >= limit:
                 result = {**result, 'state': 'limit_reached', 'fallback': True}
-            return {**result, 'source': source, 'managed_available': managed_allowed(owner),
+            return {**result, 'source': source, 'plan': 'free', 'prototype_mode': prototype_mode(),
+                'managed_limit': managed_limit(), 'managed_available': managed_allowed(owner),
                 'managed_model': os.getenv('CHATGPT_MODEL', 'gpt-6-luna'),
                 'monthly_limit': limit, 'used': used, 'month': datetime.now(timezone.utc).strftime('%Y-%m'),
                 'key_connected': bool(row and row.encrypted_credentials),
@@ -206,7 +232,7 @@ def install_routes(app, core):
             if source == 'grounded' or (source == 'managed' and not managed_allowed(owner)):
                 db.commit()
                 return None
-            limit = row.monthly_limit if source == 'byok' else int(os.getenv('BIZBUDDY_MANAGED_AI_LIMIT', '100'))
+            limit = row.monthly_limit if source == 'byok' else managed_limit()
             if count_usage(db, owner, source) >= limit:
                 db.commit()
                 return None
@@ -395,7 +421,8 @@ def install_routes(app, core):
     @app.get('/api/plans')
     def plans(credentials=Depends(core['bearer_scheme'])):
         owner = auth(credentials).id if credentials is not None else None
-        return {'currency': 'NGN', 'early_access': True, 'platform_price': 0, 'checkout_enabled': False, 'tiers': PLAN_TIERS,
+        return {'currency': 'NGN', 'early_access': True, 'platform_price': 0, 'checkout_enabled': False, 'prototype_mode': prototype_mode(),
+            'tiers': [{**tier, 'features': ['100 managed AI replies / month', *tier['features']] if tier['id'] == 'free' and prototype_mode() else tier['features']} for tier in PLAN_TIERS],
             'managed_available': managed_allowed(owner), 'managed_model': os.getenv('CHATGPT_MODEL', 'gpt-6-luna'),
-            'managed_limit': int(os.getenv('BIZBUDDY_MANAGED_AI_LIMIT', '100')),
+            'managed_limit': managed_limit(),
             'providers': [{'id': k, 'name': v[0]} for k, v in PROVIDERS.items()]}

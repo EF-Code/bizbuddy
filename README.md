@@ -330,14 +330,19 @@ in-process. A future multi-process deployment needs a database-level reservation
 lock/counter before scaling workers. No customer prompt, response or API key is
 stored in the usage ledger.
 
-Managed access is gated separately from BYOK. For the self-hosted ChatGPT pilot,
-`BIZBUDDY_CHATGPT_OWNER_IDS` lists the owner's existing pilot workspaces. New
-merchant registrations do not inherit that subscription. Set
-`BIZBUDDY_CHATGPT_PARTNER_APPROVED=true` only after the relevant hosted-app
-approval; alternatively provision API-backed managed access with
-`BIZBUDDY_MANAGED_AI_ENABLED=true` and a funded server API key. Neither is enabled
-automatically. `BIZBUDDY_MANAGED_AI_LIMIT` defaults to 100 requests per month.
-Managed-access requests are saved per tenant without sending external messages.
+The current installation is a testing prototype: `BIZBUDDY_PROTOTYPE_MODE=true`
+makes the configured managed model available to every account, with new settings
+selecting managed AI by default. All accounts use the Free plan with a hard cap
+of 100 successful/in-flight managed requests per UTC calendar month, independent
+of other accounts. Assistant tests share that allowance; failures do not consume
+it. Higher launch-tier allowances are not active.
+
+After enabling the flag on an existing installation, run the deployed Python
+interpreter with `ops/enable-prototype-ai.py` and the existing `DATABASE_URL` to
+switch current accounts to managed AI. This explicit rollout preserves saved keys,
+usage, business data and paused chat settings; rerunning it does not reset quotas.
+Owners can still choose their own key or saved facts afterward. Outside prototype
+mode, the existing owner allowlist/provisioned managed-access gates apply.
 
 `/pricing` and the workspace plan share the `/api/plans` catalogue: Free, Starter
 (NGN 5,000/month), Growth (NGN 15,000/month), and Business (NGN 35,000/month).

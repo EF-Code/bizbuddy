@@ -24,7 +24,7 @@ class MerchantAITests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.old_engine = main.engine
         main.engine = create_engine('sqlite:///' + str(Path(cls.temp.name) / 'app.db'), connect_args={'check_same_thread': False})
-        cls.env = patch.dict(os.environ, {'BIZBUDDY_AI_PROVIDER': 'grounded', 'OPENAI_API_KEY': '', 'CHATBOT_ENCRYPTION_KEY': Fernet.generate_key().decode(), 'BIZBUDDY_CHATGPT_PARTNER_APPROVED': 'false'})
+        cls.env = patch.dict(os.environ, {'BIZBUDDY_AI_PROVIDER': 'grounded', 'OPENAI_API_KEY': '', 'CHATBOT_ENCRYPTION_KEY': Fernet.generate_key().decode(), 'BIZBUDDY_CHATGPT_PARTNER_APPROVED': 'false', 'BIZBUDDY_PROTOTYPE_MODE': 'false'})
         cls.env.start()
         cls.client = TestClient(main.app)
         cls.client.__enter__()
@@ -108,6 +108,58 @@ class MerchantAITests(unittest.TestCase):
             response = self.client.put('/api/assistant/source', headers=self.other_headers, json={'source': 'managed'})
             self.assertEqual(response.status_code, 409)
             self.assertFalse(self.client.get('/api/plans').json()['managed_available'])
+
+    def test_prototype_defaults_cover_existing_and_new_accounts_without_resetting_usage(self):
+        self.connect()
+        self.client.put('/api/onboarding/progress', headers=self.other_headers, json={'step': 1})
+        month = datetime.now(timezone.utc).strftime('%Y-%m')
+        with Session(main.engine) as db:
+            db.add(main.AIRequest(owner_id=self.owner, month=month, source='managed', state='success'))
+            db.commit()
+        with patch.dict(os.environ, {'BIZBUDDY_PROTOTYPE_MODE': 'true', 'BIZBUDDY_AI_PROVIDER': 'chatgpt', 'BIZBUDDY_CHATGPT_OWNER_IDS': '0', 'BIZBUDDY_MANAGED_AI_LIMIT': '999'}):
+            main.enable_prototype_managed_ai()
+            for owner in (self.owner, self.other):
+                status = main.merchant_ai_status(owner)
+                self.assertTrue(status['managed_available'])
+                self.assertEqual(status['source'], 'managed')
+                self.assertEqual(status['monthly_limit'], 100)
+            self.assertEqual(main.merchant_ai_status(self.owner)['used'], 1)
+            self.assertTrue(main.merchant_ai_status(self.owner)['key_connected'])
+            self.assertEqual(main.enable_prototype_managed_ai()['updated_existing_settings'], 0)
+            headers, owner = self.register('new-prototype-' + self.email)
+            self.assertEqual(self.client.get('/api/onboarding', headers=headers).json()['engine']['source'], 'managed')
+            self.assertEqual(main.merchant_ai_status(owner)['used'], 0)
+            with patch('ai_provider.generate', AsyncMock(return_value=ANSWER)) as reply:
+                result = asyncio.run(main.merchant_ai_generate(owner, 'Opening hours?'))
+            self.assertEqual(result['_source'], 'managed')
+            reply.assert_awaited_once()
+            plans = self.client.get('/api/plans').json()
+            self.assertTrue(plans['managed_available'])
+            self.assertIn('100 managed AI replies / month', plans['tiers'][0]['features'])
+
+    def test_prototype_managed_cap_is_per_account_and_resets_by_utc_month(self):
+        with patch.dict(os.environ, {'BIZBUDDY_PROTOTYPE_MODE': 'true', 'BIZBUDDY_AI_PROVIDER': 'chatgpt', 'BIZBUDDY_MANAGED_AI_LIMIT': '999'}):
+            month = datetime.now(timezone.utc).strftime('%Y-%m')
+            with Session(main.engine) as db:
+                for _ in range(99):
+                    db.add(main.AIRequest(owner_id=self.owner, month=month, source='managed', state='success'))
+                db.add(main.AIRequest(owner_id=self.owner, month='2000-01', source='managed', state='success'))
+                db.add(main.AIRequest(owner_id=self.owner, month=month, source='managed', state='fallback'))
+                db.commit()
+            async def delayed(*_):
+                await asyncio.sleep(.05)
+                return ANSWER
+            async def run():
+                return await asyncio.gather(main.merchant_ai_generate(self.owner, 'One'), main.merchant_ai_generate(self.owner, 'Two'))
+            with patch('ai_provider.generate', side_effect=delayed) as reply:
+                answers = asyncio.run(run())
+                self.assertEqual(sum(answer is not None for answer in answers), 1)
+                self.assertIsNone(asyncio.run(main.merchant_ai_generate(self.owner, 'Over cap')))
+                self.assertIsNotNone(asyncio.run(main.merchant_ai_generate(self.other, 'Separate quota')))
+            self.assertEqual(reply.call_count, 2)
+            self.assertEqual(main.merchant_ai_status(self.owner)['state'], 'limit_reached')
+            self.assertEqual(main.merchant_ai_status(self.owner)['used'], 100)
+            self.assertEqual(main.merchant_ai_status(self.other)['used'], 1)
 
     def test_tenant_key_and_provider_selected_for_customer_reply(self):
         self.connect()
