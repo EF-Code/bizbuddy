@@ -65,7 +65,7 @@ class GatewayTests(unittest.TestCase):
         cls.temp.cleanup()
 
     def test_1_static_routes_and_private_files(self):
-        for path in ('/', '/signin', '/register', '/demo', '/dashboard', '/dashboard/inventory', '/dashboard/inbox', '/chat/public-id'):
+        for path in ('/', '/signin', '/register', '/demo', '/pricing', '/dashboard/setup', '/dashboard', '/dashboard/inventory', '/dashboard/inbox', '/chat/public-id'):
             self.assertEqual(urllib.request.urlopen(self.base + path).read(), b'FIRST')
         for path in ('/backend/.env', '/backend/bizbuddy.db', '/src/App.jsx', '/.git/config', '/assets/missing.js'):
             with self.assertRaises(urllib.error.HTTPError) as error:
