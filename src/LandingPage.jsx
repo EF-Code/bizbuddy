@@ -45,7 +45,7 @@ export default function LandingPage({ navigateAuth }) {
             </h1>
             <p className="landing-description">
               Keep orders moving, care for your customers, and let your AI
-              concierge take busywork off your hands.
+              assistant take busywork off your hands.
             </p>
             <div className="landing-hero-actions">
               <button
@@ -78,13 +78,20 @@ export default function LandingPage({ navigateAuth }) {
                 </span>
                 <span>Order flow</span>
               </div>
-              <div className="order-flow">
-                <span>New</span>
-                <i />
-                <span>Confirmed</span>
-                <i />
-                <span>Complete</span>
-              </div>
+              <ol className="landing-order-timeline" aria-label="Order progress">
+                {[
+                  ["invoice", "New"],
+                  ["box", "Confirmed"],
+                  ["check", "Complete"],
+                ].map(([icon, label]) => (
+                  <li key={label}>
+                    <span className="landing-order-node">
+                      <Icon name={icon} size={18} />
+                    </span>
+                    <span className="landing-order-label">{label}</span>
+                  </li>
+                ))}
+              </ol>
               <small>Keep every order moving forward.</small>
             </article>
             <article className="showcase-card showcase-concierge">
@@ -92,7 +99,7 @@ export default function LandingPage({ navigateAuth }) {
                 <span className="showcase-icon sparkle">
                   <Icon name="sparkle" size={17} />
                 </span>
-                <span>AI concierge</span>
+                <span>AI assistant</span>
               </div>
               <p>Thoughtful customer replies, right when you need them.</p>
               <span className="showcase-link">
@@ -129,7 +136,7 @@ export default function LandingPage({ navigateAuth }) {
         <i />
         <b>Customers</b>
         <i />
-        <b>AI concierge</b>
+        <b>AI assistant</b>
         <i />
         <b>Your business</b>
       </div>
@@ -149,11 +156,13 @@ export default function LandingPage({ navigateAuth }) {
         <div className="landing-feature-cards" id="how-it-works">
           <article className="landing-feature-card feature-orders">
             <div className="feature-visual order-visual">
-              <span>Order received</span>
-              <i>
-                <Icon name="arrow" size={16} />
-              </i>
-              <b>Keep it moving</b>
+              <div className="landing-order-receipt">
+                <Icon name="circleCheck" size={30} />
+                <div>
+                  <strong>Order received</strong>
+                  <small>Ready for your confirmation</small>
+                </div>
+              </div>
             </div>
             <h3>Stay on top of every order.</h3>
             <p>
@@ -185,7 +194,7 @@ export default function LandingPage({ navigateAuth }) {
               </span>
               <b>A helpful hand, on demand.</b>
             </div>
-            <h3>Meet your AI concierge.</h3>
+            <h3>Meet your AI assistant.</h3>
             <p>
               Get help drafting customer replies and handling everyday
               questions.

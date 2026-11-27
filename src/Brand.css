@@ -433,14 +433,70 @@
   color: #c8bddb;
   font-size: 11px;
 }
-.landing-site .order-flow {
-  margin: 20px 0 18px;
+.landing-site .landing-order-timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 22px 0 18px;
+  padding: 0;
+  isolation: isolate;
 }
-.landing-site .order-flow span {
-  font-size: 11px;
-  padding: 6px 9px;
-  border-radius: 5px;
-  border-color: #6b5c7c;
+.landing-order-timeline::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 16.67%;
+  right: 16.67%;
+  height: 1px;
+  background: #8b799f;
+  z-index: -1;
+}
+.landing-order-timeline li {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.landing-order-node {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #8b799f;
+  border-radius: 50%;
+  background: #332744;
+  color: #e6dbfa;
+}
+.landing-order-timeline li:last-child .landing-order-node {
+  background: var(--brand-lime);
+  border-color: var(--brand-lime);
+  color: var(--brand-nav-ink);
+}
+.landing-order-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e3d8f3;
+}
+.landing-order-receipt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #513970;
+}
+.landing-order-receipt > svg {
+  flex: none;
+}
+.landing-order-receipt strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+}
+.landing-order-receipt small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .landing-site .showcase-concierge p {
   font-family: "BB Heading", sans-serif;
@@ -596,10 +652,6 @@
 @media (max-width: 1000px) {
   .landing-site .showcase-card {
     padding: 16px;
-  }
-  .landing-site .order-flow span {
-    font-size: 10px;
-    padding: 6px;
   }
   .landing-site .hero-showcase {
     gap: 12px;
