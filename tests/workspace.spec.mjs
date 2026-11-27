@@ -49,7 +49,7 @@ test("professional workspace keeps the complete business workflow working", asyn
     await page.getByLabel("Email address", { exact: true }).fill(email);
     await page
       .getByLabel("Business category", { exact: true })
-      .selectOption({ label: "Fashion & textiles" });
+      .selectOption({ label: "Arts & crafts" });
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Show password" }).click();
     await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute(
@@ -62,6 +62,11 @@ test("professional workspace keeps the complete business workflow working", asyn
       .getByRole("button", { name: "Create account", exact: true })
       .click();
     await expect(page).toHaveURL(/\/dashboard\/setup$/);
+    const token = await page.evaluate(() => sessionStorage.getItem("bizbuddyToken"));
+    const profile = await page.request.get("/api/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect((await profile.json()).category).toBe("Arts & crafts");
     await page
       .getByRole("button", { name: "Continue to business knowledge" })
       .click();
