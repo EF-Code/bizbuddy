@@ -34,3 +34,4 @@ dist-ssr
 backend/.encryption-key
 
 backend/.opencode-workspace/
+backend/.chatgpt/

@@ -48,6 +48,13 @@ class OperationsTests(unittest.TestCase):
         self.assertEqual(status.status_code, 200)
         self.assertEqual(status.json()['provider'], 'grounded')
 
+    def test_owner_chat_uses_selected_subscription_without_api_billing(self):
+        with patch.dict(os.environ, {'BIZBUDDY_AI_PROVIDER': 'chatgpt', 'OPENAI_API_KEY': 'must-not-be-used'}), patch.object(main, 'generate_chatbot_reply', AsyncMock(return_value={'reply': 'Owner-approved business answer'})) as generate, patch.object(main, 'AsyncOpenAI', side_effect=AssertionError('API billing must not be used')):
+            response = self.client.post('/api/ai/chat', headers=self.owner, json={'messages': [{'role': 'user', 'content': 'When do you open?'}]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['reply'], 'Owner-approved business answer')
+        generate.assert_awaited_once()
+
     def test_opencode_limit_keeps_public_chat_and_order_capture_working(self):
         c, h = self.client, self.other
         c.post('/api/operations/products', headers=h, json={'name': 'Gold sample', 'price': 120000, 'stock': 4, 'threshold': 1})

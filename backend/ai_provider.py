@@ -13,10 +13,13 @@ _state = 'starting'
 
 
 def configured():
-    return os.getenv('BIZBUDDY_AI_PROVIDER', '').lower() == 'opencode'
+    return os.getenv('BIZBUDDY_AI_PROVIDER', '').lower() in ('opencode', 'chatgpt')
 
 
 def status():
+    if os.getenv('BIZBUDDY_AI_PROVIDER', '').lower() == 'chatgpt':
+        import chatgpt_provider
+        return chatgpt_provider.status()
     if not configured():
         return {'provider': 'openai' if os.getenv('OPENAI_API_KEY') else 'grounded', 'state': 'configured' if os.getenv('OPENAI_API_KEY') else 'ready', 'fallback': False}
     return {'provider': 'opencode', 'model': os.getenv('OPENCODE_MODEL', 'deepseek-v4.1-flash-free'), 'state': _state, 'fallback': _state != 'ready', 'retry_after': max(0, int(_retry_at - time.monotonic()))}
@@ -41,6 +44,9 @@ async def close():
 
 
 async def generate(prompt):
+    if os.getenv('BIZBUDDY_AI_PROVIDER', '').lower() == 'chatgpt':
+        import chatgpt_provider
+        return await chatgpt_provider.generate(prompt)
     global _process, _retry_at, _state
     if not configured() or len(prompt) > 65000 or time.monotonic() < _retry_at:
         return None

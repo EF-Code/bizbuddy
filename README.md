@@ -216,9 +216,11 @@ The configured model must appear in the SDK catalogue with zero prices; there
 is no automatic paid-model fallback. DeepSeek V4.1 Flash Free and Hy4 Flash Free
 are the supported model IDs, based on OpenCode's documented retention policies.
 
-Free models have provider quotas and can disappear. On this VPS the live
-SDK probe returned **Free usage limit reached**. This is an external availability
-limit, not working free access. BizBuddy automatically falls back to its existing
+Free models have provider quotas and can disappear. OpenCode now documents that
+free-tier chat models require OpenCode, while other clients need paid access.
+On this VPS the SDK probe returned **Free usage limit reached**; the broad error
+does not establish a daily reset time and may reflect that client restriction.
+BizBuddy automatically falls back to its existing
 fact-based replies on quota limits, invalid output, missing runtime or timeouts,
 with a five-minute cooldown. Order capture and sensitive payment checks remain
 deterministic. Assistant settings show the current provider/fallback state.
@@ -234,3 +236,71 @@ flows retain their existing structure. Shared brand roles live in `src/Brand.css
 active workspace styles reference those roles instead of separate navy/teal colors.
 The landing retains its signature image and composition, with clearer typography,
 consistent branding and a direct link to the messages demo.
+
+### Sign in with ChatGPT (self-hosted installation)
+
+BizBuddy can use an explicitly authorized ChatGPT Plus/Pro plan through the
+[official open-source Sign in with ChatGPT flow](https://developers.openai.com/siwc/token-sharing-open-source).
+It does not require an OpenAI API key and never switches to API billing if the
+plan is unavailable. GPT-6-Luna must appear in the connected account's model
+catalog; otherwise the application shows `model_unavailable` and uses saved facts.
+
+The administrator must complete the browser sign-in once. The callback is
+loopback-only, as required by the official flow. On your own computer, open an SSH
+connection to this VPS with local forwarding (replace `YOUR_VPS_SSH_HOST` with the
+same host/IP you normally use for SSH):
+
+```sh
+ssh -L 1455:127.0.0.1:1455 vangaard@YOUR_VPS_SSH_HOST
+```
+
+In that SSH terminal:
+
+```sh
+cd /home/vangaard/bizbuddy
+bash ops/connect-chatgpt.sh
+```
+
+Open the printed authorization URL in your computer's browser, sign in, and
+explicitly allow ChatGPT plan usage for **BizBuddy**. The callback goes through
+the SSH tunnel. The helper validates PKCE/state and the signed ID token's issuer,
+audience, expiration and nonce, verifies granted scopes, and lists account models.
+The setup script then verifies a real GPT-6-Luna response, saves configuration and
+restarts only the BizBuddy API. It prints neither credentials nor provider error bodies. Do not paste credentials
+or callback URLs into chat. No Caddy route, public callback, or full OpenCode
+application is needed.
+
+Server configuration:
+
+```dotenv
+BIZBUDDY_AI_PROVIDER=chatgpt
+CHATGPT_MODEL=gpt-6-luna
+CHATGPT_CREDENTIALS_FILE=/home/vangaard/bizbuddy/backend/.chatgpt/credentials.json
+```
+
+Credentials are stored atomically with owner-only permissions, outside releases
+and Git. This deployment runs one API worker, which owns serialized refreshes.
+Inference uses the documented public Responses endpoint with the OAuth token,
+`store:false`, `stream:true`, an account-listed model, a bounded deadline, and
+strict reply validation. An interrupted or failed stream never counts as success.
+Customer order confirmation and payment decisions remain controlled by the owner.
+ChatGPT usage can be managed at https://chatgpt.com/settings/usage.
+
+This configuration is for the owner's self-hosted open-source installation.
+Offering ChatGPT plan usage as a remotely hosted service for other businesses
+requires following OpenAI's separate partner onboarding; this is not implemented
+by registering visitors under the administrator's ChatGPT identity. See the
+[VM guide](https://developers.openai.com/siwc/token-sharing-open-source/self-hosted-vms).
+
+### Product scope from the project PDF
+
+`BizBuddy_Project_Explanation.pdf` defines an AI back-office for small businesses:
+channel connectors normalize messages into one inbox, a shared assistant answers
+from business data and hands off uncertain requests, orders are captured, overdue
+invoices receive approved follow-ups, and a daily summary reports orders by
+channel, outstanding money and low stock. Email replies begin as owner-reviewed
+drafts. The MVP permits WhatsApp sandbox and Meta test/simulated channels and calls
+for honest presentation of those limits. Its light-code option explicitly permits
+FastAPI/Node and SQLite; Claude is its proposed model, replaced here by the owner's
+requested ChatGPT plan connection. Accounts and the full dashboard extend the
+PDF's original MVP scope.

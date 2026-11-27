@@ -38,33 +38,50 @@ export default function AssistantPage() {
         </span>
         <div>
           <h2>
-            {engine?.provider === "opencode"
+            {engine?.provider === "chatgpt"
+              ? "ChatGPT · GPT-6-Luna"
+              : engine?.provider === "opencode"
               ? "OpenCode AI"
               : engine?.provider === "openai"
                 ? "AI replies"
                 : "Fact-based replies"}
           </h2>
           <p>
-            {engine?.provider === "opencode"
+            {engine?.provider === "chatgpt"
+              ? engine.state === "ready"
+                ? "Connected through Sign in with ChatGPT. Replies use your ChatGPT plan and saved business knowledge."
+                : engine.state === "sign_in_required"
+                  ? "The site administrator needs to complete Sign in with ChatGPT. Customers can still get answers from saved business facts."
+                  : engine.state === "model_unavailable"
+                    ? "This ChatGPT account does not currently offer GPT-6-Luna. Saved business facts keep replies available."
+                    : engine.state === "limited"
+                      ? "ChatGPT plan usage is temporarily unavailable. Saved business facts keep replies available."
+                      : "ChatGPT is connected. Saved business facts keep replies available while model access is checked."
+              : engine?.provider === "opencode"
               ? engine.state === "ready"
                 ? "Free AI replies are available. Responses use your saved business knowledge."
                 : engine.state === "limited"
-                  ? "OpenCode’s free usage limit has been reached. Your saved facts keep chat working; AI access is checked again automatically."
+                  ? "OpenCode is refusing free-model access. Saved business facts keep chat working while access is checked again automatically."
                   : "The embedded AI engine is configured. Saved facts keep chat working while AI access is checked."
               : "Your assistant answers from saved products, policies and FAQs."}
           </p>
         </div>
         <Status
           tone={
-            engine?.provider === "opencode" && engine.state !== "ready"
+            engine?.fallback
               ? "warning"
               : "success"
           }
         >
-          {engine?.provider === "opencode" && engine.state !== "ready"
-            ? "Fact-based fallback"
+          {engine?.fallback
+            ? engine.state === "sign_in_required" ? "Sign-in required" : "Fact-based fallback"
             : "Available"}
         </Status>
+        {engine?.provider === "chatgpt" && engine.state !== "sign_in_required" && (
+          <a href="https://chatgpt.com/settings/usage" target="_blank" rel="noreferrer">
+            Manage ChatGPT usage
+          </a>
+        )}
       </section>
       <section className="bb-panel bb-assistant-status">
         <span className="bb-connection-icon">
