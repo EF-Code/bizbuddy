@@ -261,6 +261,15 @@ test("professional workspace keeps the complete business workflow working", asyn
     await expect(page.getByRole("dialog")).toContainText("16,000.00");
     await page.keyboard.press("Escape");
     await shot("orders");
+    for (const width of [320, 390, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBeTruthy();
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await nav("Inventory");
     await expect(
       page.getByRole("cell", { name: "1 Low-stock alert at 5", exact: true }),
