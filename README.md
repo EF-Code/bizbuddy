@@ -304,3 +304,41 @@ for honest presentation of those limits. Its light-code option explicitly permit
 FastAPI/Node and SQLite; Claude is its proposed model, replaced here by the owner's
 requested ChatGPT plan connection. Accounts and the full dashboard extend the
 PDF's original MVP scope.
+
+### Merchant onboarding and AI connections
+
+New registrations open `/dashboard/setup`: choose a reply engine, save business
+knowledge, test a supported answer, and activate a real website chat. Owners can
+skip, resume or revisit setup. Activation requires a passing answer against the
+current knowledge; edits invalidate that test. A saved-fact reply is labeled as
+such, rather than presented as model-generated text.
+
+`/dashboard/assistant` and `/dashboard/plan` expose the per-business AI connection.
+Owners can connect OpenAI, Groq or Gemini, load model IDs, verify a real synthetic
+response, select a monthly request cap, and remove or switch the connection.
+The key is encrypted using the existing `CHATBOT_ENCRYPTION_KEY`, never returned
+by settings endpoints, and never accepted as a custom upstream URL. A failed
+verification preserves the previous connection. Provider charges belong to the
+merchant; the request cap is not a monetary spending limit.
+
+The shared reply pipeline selects the merchant's configuration for website,
+Telegram, approved email drafts and other connected channels. Successful model
+requests and in-flight reservations are counted by owner/source/UTC month in
+`merchant_ai_requests`; failures release reservations, and crashed reservations
+expire after 60 seconds. The current VPS uses one API process; serialization is
+in-process. A future multi-process deployment needs a database-level reservation
+lock/counter before scaling workers. No customer prompt, response or API key is
+stored in the usage ledger.
+
+Managed access is gated separately from BYOK. For the self-hosted ChatGPT pilot,
+`BIZBUDDY_CHATGPT_OWNER_IDS` lists the owner's existing pilot workspaces. New
+merchant registrations do not inherit that subscription. Set
+`BIZBUDDY_CHATGPT_PARTNER_APPROVED=true` only after the relevant hosted-app
+approval; alternatively provision API-backed managed access with
+`BIZBUDDY_MANAGED_AI_ENABLED=true` and a funded server API key. Neither is enabled
+automatically. `BIZBUDDY_MANAGED_AI_LIMIT` defaults to 100 requests per month.
+Managed-access requests are saved per tenant without sending external messages.
+
+`/pricing` and the workspace plan show free early access, separate provider costs,
+and actual managed-AI availability. Checkout and subscription charges remain
+disabled. Research and scope: `docs/product-gap-review.md`.

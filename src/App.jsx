@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import LandingPage from "./LandingPage";
+import OnboardingPage from "./pages/OnboardingPage";
+import PricingPage from "./pages/PricingPage";
 import DemoWorkspace from "./demo/DemoWorkspace";
 import AuthPage from "./pages/AuthPage";
 import OperationsWorkspace from "./OperationsWorkspace";
 import LiveTwilioWorkspace from "./LiveTwilioWorkspace";
-import { OrdersPage, SettingsPage, PlanPage } from "./pages/AccountPages";
+import { OrdersPage, SettingsPage } from "./pages/AccountPages";
 import {
   Brand,
   Button,
@@ -20,8 +22,16 @@ import "./App.css";
 import "./Workspace.css";
 import "./Professional.css";
 import "./Brand.css";
+import "./AIWorkspace.css";
 
 const pages = [
+  {
+    slug: "setup",
+    label: "Quick setup",
+    code: "Assistant Setup",
+    icon: "sparkle",
+    group: "Management",
+  },
   {
     slug: "",
     label: "Overview",
@@ -236,7 +246,16 @@ export default function App() {
     sessionStorage.setItem("bizbuddyToken", result.token);
     setProfile(result.user);
     setToken(result.token);
-    navigate("/dashboard");
+    let destination = "/dashboard/setup";
+    if (!registering) {
+      try {
+        const setup = await request("/onboarding");
+        if (setup.completed || setup.skipped) destination = "/dashboard";
+      } catch {
+        destination = "/dashboard";
+      }
+    }
+    navigate(destination);
   }
   async function logout() {
     try {
@@ -255,11 +274,13 @@ export default function App() {
     (["/", "/signin", "/register"].includes(pathname) ? pages[0] : null);
   useEffect(() => {
     document.title =
-      pathname === "/demo"
-        ? "Interactive messages demo · BizBuddy"
-        : pathname === "/"
-          ? "BizBuddy — Business, in better order"
-          : `${!token ? (pathname === "/register" ? "Create account" : "Sign in") : page?.label || "Page not found"} · BizBuddy`;
+      pathname === "/pricing"
+        ? "Pricing & AI access · BizBuddy"
+        : pathname === "/demo"
+          ? "Interactive messages demo · BizBuddy"
+          : pathname === "/"
+            ? "BizBuddy — Business, in better order"
+            : `${!token ? (pathname === "/register" ? "Create account" : "Sign in") : page?.label || "Page not found"} · BizBuddy`;
   }, [pathname, token, page]);
   if (pathname === "/")
     return (
@@ -271,11 +292,14 @@ export default function App() {
               signin: "/signin",
               register: "/register",
               demo: "/demo",
+              pricing: "/pricing",
             }[value],
           )
         }
       />
     );
+  if (pathname === "/pricing")
+    return <PricingPage publicPage onNavigate={navigate} />;
   if (pathname === "/demo") return <DemoWorkspace onNavigate={navigate} />;
   if (!token)
     return (
@@ -482,8 +506,10 @@ export default function App() {
                   setProfile={setProfile}
                   setNotice={setNotice}
                 />
+              ) : page.slug === "setup" ? (
+                <OnboardingPage onNavigate={navigatePage} />
               ) : page.slug === "plan" ? (
-                <PlanPage onNavigate={navigatePage} />
+                <PricingPage onNavigate={navigatePage} />
               ) : page.slug === "demo" ? (
                 <DemoWorkspace
                   embedded

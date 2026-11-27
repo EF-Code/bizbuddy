@@ -194,7 +194,7 @@ def install_routes(app, core):
                 'summaries': [json.loads(p.content) for p in db.scalars(select(Summary).where(Summary.owner_id == user.id).order_by(Summary.day.desc()).limit(14)).all()],
                 'customers': [{**payload(p), 'group_id': (db.get(CustomerLink, p.id).group_id if db.get(CustomerLink, p.id) else p.id)} for p in db.scalars(select(Customer).where(Customer.owner_id == user.id)).all()],
                 'notifications': payload(db.get(NotificationSettings, user.id)) if db.get(NotificationSettings, user.id) else {'channel':'dashboard','recipient':'','hour_utc':18,'last_status':'not_sent','sent_day':''},
-                'reply_engine': 'grounded knowledge' if not core['os'].getenv('OPENAI_API_KEY') else 'OpenAI',
+                'reply_engine': core['merchant_ai_status'](user.id)['provider'],
             })
             return result
 
@@ -374,6 +374,8 @@ def install_routes(app, core):
             sync_products(db, user.id)
             db.commit()
             return core['chatbot_payload'](bot)
+
+    core['setup_website_for_owner'] = setup_website
 
     @app.post('/api/operations/website/message')
     async def website_test(data: TestMessage, user=Depends(auth)):

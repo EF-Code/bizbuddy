@@ -230,9 +230,7 @@ export default function InboxPage() {
     [channel, setChannel] = useState("all"),
     [selected, setSelected] = useState(""),
     [mobileThread, setMobileThread] = useState(false);
-  const [mode, setMode] = useState(() =>
-    inbox.conversations.length ? "live" : "demo",
-  );
+  const [mode, setMode] = useState("live");
   const viewportHeight = useViewportHeight();
   const conversations = inbox.conversations.filter(
     (c) =>
@@ -295,8 +293,8 @@ export default function InboxPage() {
             title="Your first conversation starts here."
             description="Connect website chat or a messaging channel. Customer questions and order requests will land in this inbox."
             action={
-              <Button icon="link" onClick={() => onNavigate("connections")}>
-                Set up a channel
+              <Button icon="sparkle" onClick={() => onNavigate("setup")}>
+                Set up &amp; test your assistant
               </Button>
             }
           />

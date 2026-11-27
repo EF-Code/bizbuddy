@@ -13,35 +13,10 @@ import {
 import { dateLabel, initials, money, timeLabel } from "../components/format";
 
 export default function OverviewPage() {
-  const { data, inbox, bot, profile, busy, action, onNavigate } = useBusiness();
+  const { data, inbox, engine, profile, busy, action, onNavigate } =
+    useBusiness();
   const [history, setHistory] = useState(false);
   const s = data.summary;
-  const setupSteps = [
-    {
-      title: "Add your catalogue",
-      detail: "Give customers accurate prices and stock information.",
-      done: data.products.length > 0,
-      page: "inventory",
-      icon: "box",
-    },
-    {
-      title: "Teach your assistant",
-      detail: "Save your opening hours, delivery policy and common answers.",
-      done: Boolean(bot.operating_hours && bot.delivery_policy),
-      page: "assistant",
-      icon: "sparkle",
-    },
-    {
-      title: "Open your customer chat",
-      detail: "Share a chat link. No external account is needed.",
-      done: inbox.channels.some(
-        (c) => c.channel === "website" && c.status === "connected",
-      ),
-      page: "connections",
-      icon: "message",
-    },
-  ];
-  const setupCount = setupSteps.filter((step) => step.done).length;
   const recent = [...inbox.conversations]
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
     .slice(0, 4);
@@ -59,7 +34,7 @@ export default function OverviewPage() {
   return (
     <>
       <PageHeader
-        title="A little clarity for your day."
+        title="Your customer automation, at a glance."
         description={`Here’s what’s happening at ${profile?.business || "your business"}.`}
       >
         <Button
@@ -76,60 +51,23 @@ export default function OverviewPage() {
           Refresh briefing
         </Button>
       </PageHeader>
-      {setupCount < setupSteps.length && (
-        <section className="bb-launchpad" aria-label="Workspace setup">
-          <div className="bb-launchpad-intro">
-            <span className="bb-launch-icon">
-              <Icon name="sparkle" size={28} />
-            </span>
-            <div>
-              <h2>Your business, ready for its next conversation.</h2>
-              <p>
-                Three small steps turn this workspace into your customer service
-                desk.
-              </p>
-            </div>
-            <span className="bb-setup-count">{setupCount} of 3 ready</span>
-          </div>
-          <div
-            className="bb-setup-track"
-            role="progressbar"
-            aria-label="Workspace setup progress"
-            aria-valuemin={0}
-            aria-valuemax={3}
-            aria-valuenow={setupCount}
-          >
-            <span style={{ width: `${(setupCount / 3) * 100}%` }} />
-          </div>
-          <div className="bb-setup-steps">
-            {setupSteps.map((step) => (
-              <button
-                key={step.page}
-                onClick={() => onNavigate(step.page)}
-                className={step.done ? "is-done" : ""}
-              >
-                <span className="bb-setup-step-icon">
-                  <Icon name={step.done ? "check" : step.icon} size={22} />
-                </span>
-                <span>
-                  <strong>{step.title}</strong>
-                  <small>{step.detail}</small>
-                  <em>
-                    {step.done ? "Ready · Review" : "Get started"}
-                    <Icon name="arrow" size={15} />
-                  </em>
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="bb-launchpad-footer">
-            <span>Want to explore before setting up?</span>
-            <Button variant="ghost" onClick={() => onNavigate("demo")}>
-              Try the messages demo <Icon name="arrow" size={16} />
-            </Button>
-          </div>
-        </section>
-      )}
+      <section className="bb-ai-overview">
+        <div>
+          <h2>
+            {engine?.source !== "grounded" && !engine?.fallback
+              ? "AI customer replies are connected."
+              : "Turn your knowledge into customer replies."}
+          </h2>
+          <p>
+            {engine?.source !== "grounded"
+              ? `${engine?.model || "Your model"} · ${engine?.used || 0} / ${engine?.monthly_limit || 0} AI requests this month`
+              : "Connect a model, teach it about your business, then see it answer a real question."}
+          </p>
+        </div>
+        <Button onClick={() => onNavigate("setup")}>
+          Set up &amp; test my assistant <Icon name="arrow" size={16} />
+        </Button>
+      </section>
       <div className="bb-stats">
         {stats.map(([label, value, icon]) => (
           <article key={label}>

@@ -18,7 +18,15 @@ export default function LandingPage({ navigateAuth }) {
           <nav aria-label="Main navigation">
             <a href="#features">Platform</a>
             <a href="#how-it-works">How it works</a>
-            <a href="#about">About</a>
+            <a
+              href="/pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateAuth("pricing");
+              }}
+            >
+              Pricing
+            </a>
           </nav>
           <div className="public-header-actions">
             <button
@@ -44,15 +52,16 @@ export default function LandingPage({ navigateAuth }) {
               <em>better business.</em>
             </h1>
             <p className="landing-description">
-              Keep orders moving, care for your customers, and let your AI
-              assistant take busywork off your hands.
+              Automate customer replies with an AI assistant that knows your
+              business. Bring conversations, orders and follow-ups into one
+              workspace.
             </p>
             <div className="landing-hero-actions">
               <button
                 className="hero-primary"
                 onClick={() => navigateAuth("register")}
               >
-                Get started for free <Icon name="arrow" size={16} />
+                Set up your AI assistant <Icon name="arrow" size={16} />
               </button>
               <a
                 className="hero-secondary"
@@ -65,6 +74,18 @@ export default function LandingPage({ navigateAuth }) {
                 Try the messages demo <Icon name="arrow" size={16} />
               </a>
             </div>
+            <p className="landing-cost-note">
+              Free during early access.{" "}
+              <a
+                href="/pricing"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateAuth("pricing");
+                }}
+              >
+                View pricing &amp; AI options
+              </a>
+            </p>
           </div>
 
           <div
@@ -78,7 +99,10 @@ export default function LandingPage({ navigateAuth }) {
                 </span>
                 <span>Order Flow</span>
               </div>
-              <ol className="landing-order-timeline" aria-label="Order progress">
+              <ol
+                className="landing-order-timeline"
+                aria-label="Order progress"
+              >
                 {[
                   ["invoice", "New"],
                   ["box", "Confirmed"],
@@ -200,6 +224,31 @@ export default function LandingPage({ navigateAuth }) {
               questions.
             </p>
           </article>
+        </div>
+      </section>
+
+      <section className="landing-ai-entry">
+        <h2>Your first automated reply starts here.</h2>
+        <p>
+          Add your business knowledge, connect a model, and test an answer
+          before you go live.
+        </p>
+        <div>
+          <button
+            className="hero-primary"
+            onClick={() => navigateAuth("register")}
+          >
+            Set up my assistant <Icon name="arrow" size={16} />
+          </button>
+          <a
+            href="/pricing"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateAuth("pricing");
+            }}
+          >
+            See pricing &amp; AI options
+          </a>
         </div>
       </section>
 
