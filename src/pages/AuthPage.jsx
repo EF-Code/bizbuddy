@@ -153,6 +153,23 @@ export default function AuthPage({ mode, onNavigate, onAuthenticate }) {
                   </option>
                   <option>Fashion & textiles</option>
                   <option>Retail & boutique</option>
+                  <option>Food & catering</option>
+                  <option>Groceries & provisions</option>
+                  <option>Beauty & personal care</option>
+                  <option>Electronics & gadgets</option>
+                  <option>Home & furniture</option>
+                  <option>Health & wellness</option>
+                  <option>Fitness & sports</option>
+                  <option>Education & training</option>
+                  <option>Professional services</option>
+                  <option>Digital services & technology</option>
+                  <option>Automotive & repairs</option>
+                  <option>Logistics & delivery</option>
+                  <option>Hospitality & travel</option>
+                  <option>Events & entertainment</option>
+                  <option>Agriculture & farming</option>
+                  <option>Real estate & property</option>
+                  <option>Arts & crafts</option>
                   <option>Other</option>
                 </select>
               </label>
