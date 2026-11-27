@@ -164,6 +164,7 @@ export default function OnboardingPage({ onNavigate }) {
                 <label>
                   What does your business do?
                   <textarea
+                    aria-label="What does your business do?"
                     name="business_description"
                     required
                     minLength={10}
@@ -186,6 +187,7 @@ export default function OnboardingPage({ onNavigate }) {
                 <label>
                   Delivery or service policy
                   <textarea
+                    aria-label="Delivery or service policy"
                     name="delivery_policy"
                     rows={2}
                     maxLength={2000}

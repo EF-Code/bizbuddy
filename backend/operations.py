@@ -1,6 +1,8 @@
 """Persistent back-office operations, registered against the existing auth layer."""
 import asyncio
+import hashlib
 import json
+import re
 from datetime import date, datetime, timedelta
 from collections import Counter
 from uuid import uuid4
@@ -18,6 +20,10 @@ class ProductInput(BaseModel):
     stock: int = Field(ge=0, le=10000000)
     threshold: int = Field(default=5, ge=0, le=10000000)
     description: str = Field(default='', max_length=2000)
+
+
+class ProductUpdate(ProductInput):
+    expected_edit_version: str = Field(default='', max_length=64)
 
 
 class InvoiceInput(BaseModel):
@@ -38,6 +44,8 @@ class NotificationInput(BaseModel):
 class OrderConfirmation(BaseModel):
     product_id: str = Field(min_length=1, max_length=32)
     quantity: int = Field(gt=0, le=1000000)
+    expected_version: str = Field(default='', max_length=64)
+    reviewed_changes: bool = False
 
 
 class DraftApproval(BaseModel):
@@ -72,6 +80,22 @@ def install_routes(app, core):
         stock: Mapped[int] = mapped_column(Integer)
         threshold: Mapped[int] = mapped_column(Integer, default=5)
         description: Mapped[str] = mapped_column(Text, default='')
+
+    def product_version(product):
+        return hashlib.sha256(json.dumps([product.name, product.price, product.description], ensure_ascii=False).encode()).hexdigest()
+
+    def product_edit_version(product):
+        return hashlib.sha256(json.dumps([product.name, product.price, product.description, product.stock, product.threshold], ensure_ascii=False).encode()).hexdigest()
+
+    def product_snapshot(db, owner, message):
+        matches = []
+        for product in db.scalars(select(Product).where(Product.owner_id == owner)).all():
+            if re.search(r'(?<!\w)' + re.escape(product.name) + r'(?!\w)', message, re.IGNORECASE):
+                matches.append({'id': product.id, 'name': product.name, 'price': product.price,
+                    'description': product.description, 'version': product_version(product)})
+        return json.dumps(matches[:20], ensure_ascii=False)
+
+    core['order_product_snapshot'] = product_snapshot
 
     class Invoice(Base):
         __tablename__ = 'invoices'
@@ -124,7 +148,11 @@ def install_routes(app, core):
         last_status: Mapped[str] = mapped_column(String(32), default='not_sent')
 
     def payload(row):
-        return {c.name: getattr(row, c.name) for c in row.__table__.columns if c.name != 'owner_id'}
+        result = {c.name: getattr(row, c.name) for c in row.__table__.columns if c.name != 'owner_id'}
+        if isinstance(row, Product):
+            result['version'] = product_version(row)
+            result['edit_version'] = product_edit_version(row)
+        return result
 
     def owned(db, model, key, owner):
         row = db.get(model, key)
@@ -209,12 +237,17 @@ def install_routes(app, core):
             return payload(row)
 
     @app.put('/api/operations/products/{key}')
-    def edit_product(key: str, data: ProductInput, user=Depends(auth)):
+    def edit_product(key: str, data: ProductUpdate, user=Depends(auth)):
         with session() as db:
             row = owned(db, Product, key, user.id)
-            for field, value in data.model_dump().items():
-                setattr(row, field, value)
-            db.flush()
+            if data.expected_edit_version != product_edit_version(row):
+                raise HTTPException(409, 'Stock or product details changed while this editor was open. Close and reopen the product to review the latest values.')
+            changed = db.execute(update(Product).where(Product.id == key, Product.owner_id == user.id,
+                Product.name == row.name, Product.price == row.price, Product.description == row.description,
+                Product.stock == row.stock, Product.threshold == row.threshold).values(**data.model_dump(exclude={'expected_edit_version'})).execution_options(synchronize_session=False))
+            if changed.rowcount != 1:
+                raise HTTPException(409, 'Stock or product details changed while this editor was open. Close and reopen the product to review the latest values.')
+            db.refresh(row)
             sync_products(db, user.id)
             db.commit()
             return payload(row)
@@ -340,10 +373,16 @@ def install_routes(app, core):
             order_request = owned(db, RequestOrder, key, user.id)
             product = owned(db, Product, data.product_id, user.id)
             conversation = owned(db, Conversation, order_request.conversation_id, user.id)
+            if data.expected_version != product_version(product):
+                raise HTTPException(409, 'Product details changed since this form was loaded. Refresh the inbox and review the item and price again.')
+            captured = json.loads(order_request.catalog_snapshot or '[]')
+            original = next((item for item in captured if item['id'] == product.id), None)
+            if (not original or original.get('version') != product_version(product)) and not data.reviewed_changes:
+                raise HTTPException(409, 'This item differs from the original request, or its original details were not captured. Review the current item and price with the customer before confirming.')
             claimed = db.execute(update(RequestOrder).where(RequestOrder.id == key, RequestOrder.status == 'needs_owner_confirmation').values(status='confirmed'))
             if claimed.rowcount != 1:
                 raise HTTPException(409, 'This request has already been confirmed.')
-            adjusted = db.execute(update(Product).where(Product.id == product.id, Product.stock >= data.quantity).values(stock=Product.stock - data.quantity))
+            adjusted = db.execute(update(Product).where(Product.id == product.id, Product.stock >= data.quantity, Product.name == product.name, Product.price == product.price, Product.description == product.description).values(stock=Product.stock - data.quantity))
             if adjusted.rowcount != 1:
                 raise HTTPException(409, 'Insufficient stock. Update the quantity or inventory first.')
             order = core['Order'](id=uuid4().hex, owner_id=user.id, name=conversation.customer_name or 'Customer', channel=conversation.channel, vip='', cuts=product.name, material=product.description, yards=str(data.quantity), amount=f'NGN {product.price * data.quantity / 100:,.2f}', status='Confirmed', status_class='confirmed', time=datetime.utcnow().isoformat())

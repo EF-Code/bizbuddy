@@ -45,6 +45,7 @@ export function InventoryPage() {
           price: Math.round(Number(f.price) * 100),
           stock: Number(f.stock),
           threshold: Number(f.threshold),
+          expected_edit_version: editor.edit_version || "",
         },
         editor.id ? "PUT" : "POST",
       );
@@ -308,6 +309,7 @@ export function InventoryPage() {
             <label>
               Description
               <textarea
+                aria-label="Description"
                 name="description"
                 defaultValue={editor.description}
                 maxLength={2000}

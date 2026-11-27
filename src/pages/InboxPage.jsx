@@ -14,8 +14,120 @@ import {
 } from "../components/ui";
 import { initials, money, timeLabel } from "../components/format";
 
+function OrderRequestForm({ orderRequest }) {
+  const { data, busy, action } = useBusiness();
+  const [productId, setProductId] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const product = data.products.find((item) => item.id === productId);
+  const captured = orderRequest.captured_products || [];
+  const original = captured.find((item) => item.id === productId);
+  const reviewRequired =
+    product && (!original || original.version !== product.version);
+  return (
+    <>
+      <div className="bb-request-original">
+        <strong>Original request details</strong>
+        {captured.length ? (
+          captured.map((item) => (
+            <p key={item.id}>
+              {item.name} · {money(item.price)} per unit
+              {item.description ? ` · ${item.description}` : ""}
+            </p>
+          ))
+        ) : (
+          <p>
+            No original catalogue match was captured. Review the customer's
+            request and agree the item and price before confirming.
+          </p>
+        )}
+      </div>
+      <form
+        className="bb-request-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          action(async () => {
+            const result = await request(
+              `/operations/order-requests/${orderRequest.id}/confirm`,
+              {
+                product_id: productId,
+                quantity: Number(quantity),
+                expected_version: product?.version || "",
+                reviewed_changes: form.get("reviewed_changes") === "on",
+              },
+            );
+            if (result.notification_failed)
+              throw new Error(
+                "Order saved and stock updated, but the customer notification failed. Reply manually; do not confirm again.",
+              );
+          }, "Order confirmed, stock updated and customer notified.");
+        }}
+      >
+        <label className="bb-field">
+          Confirm product
+          <select
+            aria-label="Confirm product"
+            required
+            name="product_id"
+            value={productId}
+            onChange={(event) => setProductId(event.target.value)}
+          >
+            <option value="" disabled>
+              Select a product
+            </option>
+            {data.products.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name} · {money(item.price)} · {item.stock} in stock
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="bb-field">
+          Quantity
+          <input
+            name="quantity"
+            type="number"
+            min="1"
+            max="1000000"
+            required
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+          />
+        </label>
+        {reviewRequired && (
+          <div className="bb-request-review" key={product.version}>
+            <p>
+              <strong>
+                {original
+                  ? "Catalogue changed since this request."
+                  : "Review this product selection."}
+              </strong>{" "}
+              {original
+                ? "The current item or price differs from the saved request details."
+                : "This product was not matched to the original customer request."}
+            </p>
+            <label>
+              <input type="checkbox" name="reviewed_changes" required />
+              <span>
+                I have reviewed the current item and price with the customer.
+              </span>
+            </label>
+          </div>
+        )}
+        {product && (
+          <p className="bb-request-total" aria-live="polite">
+            Confirmation total:{" "}
+            <strong>{money(product.price * (Number(quantity) || 0))}</strong>
+          </p>
+        )}
+        <Button busy={busy}>Confirm order &amp; adjust stock</Button>
+      </form>
+    </>
+  );
+}
+
 function ConversationThread({ conversation, thread, requests }) {
-  const { data, busy, error, action } = useBusiness();
+  const { busy, error, action } = useBusiness();
   const [reply, setReply] = useState("");
   const end = useRef(null);
   const [following, setFollowing] = useState(true);
@@ -136,57 +248,7 @@ function ConversationThread({ conversation, thread, requests }) {
                   <p>{o.request}</p>
                 </span>
               </div>
-              <form
-                className="bb-request-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const f = new FormData(e.currentTarget);
-                  action(async () => {
-                    const result = await request(
-                      `/operations/order-requests/${o.id}/confirm`,
-                      {
-                        product_id: f.get("product_id"),
-                        quantity: Number(f.get("quantity")),
-                      },
-                    );
-                    if (result.notification_failed)
-                      throw new Error(
-                        "Order saved and stock updated, but the customer notification failed. Reply manually; do not confirm again.",
-                      );
-                  }, "Order confirmed, stock updated and customer notified.");
-                }}
-              >
-                <label className="bb-field">
-                  Confirm product
-                  <select
-                    aria-label="Confirm product"
-                    required
-                    name="product_id"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select a product
-                    </option>
-                    {data.products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} · {money(p.price)} · {p.stock} in stock
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="bb-field">
-                  Quantity
-                  <input
-                    name="quantity"
-                    type="number"
-                    min="1"
-                    max="1000000"
-                    required
-                    defaultValue="1"
-                  />
-                </label>
-                <Button busy={busy}>Confirm order & adjust stock</Button>
-              </form>
+              <OrderRequestForm orderRequest={o} />
               <small>
                 Check the item and quantity before confirming. Delivery is
                 arranged separately.

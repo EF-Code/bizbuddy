@@ -43,10 +43,10 @@ test("public pages share the brand and keep navigation usable on phones", async 
         .getByRole("button", { name: "Sign in", exact: true }),
     ).toBeVisible();
     const actionColor = await page
-      .locator(".hero-primary")
+      .locator(".landing-hero-actions .hero-primary")
       .evaluate((el) => getComputedStyle(el).backgroundColor);
     await page
-      .getByRole("link", { name: "Try the messages demo", exact: true })
+      .getByRole("link", { name: "Explore Messages", exact: true })
       .click();
     await expect(page).toHaveURL(/\/demo$/);
     await expect(

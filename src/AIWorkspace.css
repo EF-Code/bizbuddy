@@ -566,3 +566,38 @@
   display: inline-block;
   padding: 8px 3px;
 }
+.bb-request-original {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e5d8bd;
+}
+.bb-request-original > strong {
+  font-size: 12px;
+  color: var(--brand-ink);
+}
+.bb-request-review {
+  grid-column: 1 / -1;
+  padding: 12px;
+  background: #fff4d7;
+  border: 1px solid #e4ce98;
+  border-radius: 7px;
+}
+.bb-request-review label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 10px;
+  color: #684d1e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.bb-request-review input[type="checkbox"] {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+  flex: none;
+  margin: 2px 0 0;
+}
+.bb-request-total {
+  grid-column: 1 / -1;
+}

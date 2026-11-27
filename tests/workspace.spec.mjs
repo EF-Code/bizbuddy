@@ -61,10 +61,32 @@ test("professional workspace keeps the complete business workflow working", asyn
     await page
       .getByRole("button", { name: "Create account", exact: true })
       .click();
+    await expect(page).toHaveURL(/\/dashboard\/setup$/);
+    await page
+      .getByRole("button", { name: "Continue to business knowledge" })
+      .click();
+    await page
+      .getByLabel("What does your business do?")
+      .fill("We sell fabrics and provide tailoring services.");
+    await page
+      .getByLabel("Opening hours", { exact: true })
+      .fill("Monday to Friday, 9 AM to 5 PM.");
+    await page.getByRole("button", { name: "Save & test an answer" }).click();
+    await page.getByRole("button", { name: "Test my assistant" }).click();
+    await expect(
+      page.getByText("Saved-fact reply", { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Continue to go live" }).click();
+    await page
+      .getByRole("button", { name: "Activate customer replies" })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Your customer chat is live." }),
+    ).toBeVisible();
+    await nav("Overview");
     await expect(
       page.getByRole("heading", {
-        name: "A little clarity for your day.",
-        exact: true,
+        name: "Your customer automation, at a glance.",
       }),
     ).toBeVisible();
     await shot("overview-empty");
@@ -127,7 +149,7 @@ test("professional workspace keeps the complete business workflow working", asyn
   await test.step("website connection, customer chat and operator reply", async () => {
     await nav("Connections");
     await page
-      .getByRole("button", { name: "Connect web chat", exact: true })
+      .getByRole("button", { name: "Manage connection", exact: true })
       .click();
     await page
       .getByRole("button", { name: "Enable website chat", exact: true })
@@ -159,7 +181,9 @@ test("professional workspace keeps the complete business workflow working", asyn
         exact: true,
       })
       .click();
-    await expect(chat.getByText(/owner will confirm that/)).toBeVisible();
+    await expect(
+      chat.getByText("Monday to Friday, 9 AM to 5 PM.", { exact: true }),
+    ).toBeVisible();
     const composer = await chat
       .getByLabel("Your message", { exact: true })
       .boundingBox();
@@ -374,7 +398,7 @@ test("professional workspace keeps the complete business workflow working", asyn
     await shot("settings");
     await nav("Workspace plan");
     await expect(
-      page.getByText("BizBuddy essentials", { exact: true }),
+      page.getByRole("heading", { name: "Business workspace", exact: true }),
     ).toBeVisible();
     await shot("plan");
     await nav("WhatsApp & SMS");
@@ -440,13 +464,19 @@ test("professional workspace keeps the complete business workflow working", asyn
     await shot("mobile-inventory");
   });
   await test.step("AI quota status stays honest and readable", async () => {
-    await page.route("**/api/assistant/engine", (route) =>
+    await page.route("**/api/assistant/connection", (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          provider: "opencode",
-          model: "deepseek-v4.1-flash-free",
+          provider: "openai",
+          model: "gpt-6-luna",
+          source: "byok",
+          managed_available: false,
+          monthly_limit: 500,
+          used: 22,
+          month: "2026-11",
+          key_connected: true,
           state: "limited",
           fallback: true,
           retry_after: 299,
@@ -455,10 +485,10 @@ test("professional workspace keeps the complete business workflow working", asyn
     );
     await page.goto("/dashboard/assistant");
     await expect(
-      page.getByRole("heading", { name: "OpenCode AI", exact: true }),
+      page.getByRole("heading", { name: "Your reply engine", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("Fact-based fallback", { exact: true }),
+      page.getByText("Using saved facts", { exact: true }),
     ).toBeVisible();
     await page.setViewportSize({ width: 390, height: 844 });
     expect(
@@ -467,7 +497,7 @@ test("professional workspace keeps the complete business workflow working", asyn
       ),
     ).toBeTruthy();
     await shot("assistant-quota-mobile");
-    await page.unroute("**/api/assistant/engine");
+    await page.unroute("**/api/assistant/connection");
     await page.goto("/dashboard/inventory");
     await expect(
       page.getByText("Blue ankara cotton", { exact: true }),

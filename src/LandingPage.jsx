@@ -71,7 +71,7 @@ export default function LandingPage({ navigateAuth }) {
                   navigateAuth("demo");
                 }}
               >
-                Try the messages demo <Icon name="arrow" size={16} />
+                Explore Messages <Icon name="arrow" size={16} />
               </a>
             </div>
             <p className="landing-cost-note">

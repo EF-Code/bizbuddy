@@ -48,8 +48,8 @@ const pages = [
   },
   {
     slug: "demo",
-    label: "Messages demo",
-    code: "Messages demo",
+    label: "Messages",
+    code: "Messages",
     icon: "sparkle",
     group: "Workspace",
   },
@@ -277,7 +277,7 @@ export default function App() {
       pathname === "/pricing"
         ? "Pricing & AI access · BizBuddy"
         : pathname === "/demo"
-          ? "Interactive messages demo · BizBuddy"
+          ? "Messages · BizBuddy"
           : pathname === "/"
             ? "BizBuddy — Business, in better order"
             : `${!token ? (pathname === "/register" ? "Create account" : "Sign in") : page?.label || "Page not found"} · BizBuddy`;

@@ -220,6 +220,7 @@ class ChatbotOrderRequest(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     conversation_id: Mapped[str] = mapped_column(ForeignKey("chatbot_conversations.id"), index=True)
     request: Mapped[str] = mapped_column(Text)
+    catalog_snapshot: Mapped[Optional[str]] = mapped_column(Text, default='[]', nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="needs_owner_confirmation")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -1039,6 +1040,7 @@ async def process_customer_message(
         ]
         chatbot_data = chatbot
         channel_data = integration
+        catalog_snapshot = order_product_snapshot(db, owner_id, content)
 
     if not chatbot_enabled or not auto_responses:
         with Session(engine) as db:
@@ -1086,6 +1088,7 @@ async def process_customer_message(
                 owner_id=owner_id,
                 conversation_id=conversation_id,
                 request=content,
+                catalog_snapshot=catalog_snapshot,
             ))
         db.commit()
 
@@ -1167,6 +1170,10 @@ def seed_database():
     if "owner_id" not in columns:
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE orders ADD COLUMN owner_id INTEGER NULL"))
+    request_columns = {column["name"] for column in inspect(engine).get_columns("chatbot_order_requests")}
+    if "catalog_snapshot" not in request_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE chatbot_order_requests ADD COLUMN catalog_snapshot TEXT"))
 
 
 @asynccontextmanager
@@ -1831,6 +1838,7 @@ def chatbot_dashboard(user: User = Depends(get_current_user)):
                     "customer_name": conversation.customer_name or "Customer",
                     "channel": conversation.channel,
                     "request": order_request.request,
+                    "captured_products": json.loads(order_request.catalog_snapshot or '[]'),
                     "created_at": order_request.created_at.isoformat() if order_request.created_at else None,
                 })
         conversation_count = db.scalar(

@@ -342,3 +342,19 @@ Managed-access requests are saved per tenant without sending external messages.
 `/pricing` and the workspace plan show free early access, separate provider costs,
 and actual managed-AI availability. Checkout and subscription charges remain
 disabled. Research and scope: `docs/product-gap-review.md`.
+
+### Order and inventory consistency
+
+Pending customer requests retain their original text and a snapshot of any
+explicitly named catalogue items (name, description and unit price). New fields
+are added without inventing details for older requests. A changed/replacement
+item, or an older request without a snapshot, requires an explicit owner review
+before confirmation. Confirmed and manually entered orders remain independent
+copies of the details agreed at creation time.
+
+Inventory responses include two opaque revisions. Order confirmation submits
+`expected_version` from the current product plus `reviewed_changes` where the
+original request differs; stale forms receive HTTP 409 without creating an order
+or changing stock. Inventory updates submit `expected_edit_version` from
+`edit_version`, which also covers stock and thresholds, so an old editor cannot
+overwrite an intervening sale or restock. Reload/reopen the product after a 409.

@@ -222,7 +222,7 @@ export default function AuthPage({ mode, onNavigate, onAuthenticate }) {
                 onNavigate("/demo");
               }}
             >
-              Try the messages demo <Icon name="arrow" size={14} />
+              Explore Messages <Icon name="arrow" size={14} />
             </a>
           </p>
         </section>

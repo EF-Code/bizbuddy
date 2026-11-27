@@ -19,6 +19,8 @@ export default defineConfig({
   reporter: "list",
   outputDir: "/tmp/bizbuddy-playwright-results",
   use: {
+    actionTimeout: 15000,
+    navigationTimeout: 30000,
     baseURL,
     viewport: { width: 1440, height: 1000 },
     headless: true,

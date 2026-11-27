@@ -129,6 +129,7 @@ export default function AssistantPage() {
               <label>
                 Welcome message
                 <textarea
+                  aria-label="Welcome message"
                   name="welcome_message"
                   maxLength={2000}
                   defaultValue={bot.welcome_message}
@@ -138,6 +139,7 @@ export default function AssistantPage() {
               <label>
                 About your business
                 <textarea
+                  aria-label="About your business"
                   name="business_description"
                   maxLength={5000}
                   defaultValue={bot.business_description}
@@ -244,6 +246,7 @@ export default function AssistantPage() {
                 <label key={name}>
                   {label}
                   <textarea
+                    aria-label={label}
                     name={name}
                     maxLength={2000}
                     defaultValue={bot[name]}

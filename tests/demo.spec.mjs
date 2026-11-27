@@ -13,7 +13,7 @@ test("the original messaging demo is useful on a phone and never writes to a rea
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/signin");
   await page
-    .getByRole("link", { name: "Try the messages demo", exact: true })
+    .getByRole("link", { name: "Explore Messages", exact: true })
     .click();
   await expect(page).toHaveURL(/\/demo$/);
   const log = page.getByRole("log", {
